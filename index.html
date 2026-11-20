@@ -88,14 +88,22 @@ input{font-family:var(--body);font-size:18px;padding:11px;border-radius:6px;bord
 .viewer button.on{background:var(--gold)}
 details>summary{font-family:var(--display);cursor:pointer;color:var(--wax);font-size:18px}
 .rules p{margin-bottom:6px}
-.dedic{margin:6px auto 0;display:flex;align-items:center;justify-content:center;gap:12px;padding:12px 18px;max-width:100%;text-align:center;border-top:1px solid #b8862b88;border-bottom:1px solid #b8862b88;background:linear-gradient(90deg,transparent,#3a241699 20%,#3a241699 80%,transparent)}
-.dedic .dtx{font-family:var(--num);font-weight:700;font-size:15px;letter-spacing:3px;line-height:1.5;color:#f3d48a;text-shadow:0 0 12px #ffb04a66,0 2px 0 #000;text-wrap:balance}
-.dedic .orn{font-size:24px;color:#d9a441;text-shadow:0 0 10px #ffb04a88}.dedic .orn.flip{transform:scaleX(-1)}
-@media (prefers-reduced-motion:no-preference){.dedic{animation:dedin 1.6s ease-out both}.dedic .dtx{animation:glow 3s ease-in-out 1.6s infinite alternate}@keyframes dedin{from{opacity:.15;letter-spacing:8px}to{opacity:1}}@keyframes glow{to{text-shadow:0 0 22px #ffc76acc,0 2px 0 #000}}}
+#splash{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:24px;text-align:center;background:var(--wood);background-image:radial-gradient(ellipse at 50% 40%,#7a3f12 0,#2a170b 55%,#140b05 100%);transition:opacity .9s ease,visibility .9s}
+#splash.out{opacity:0;visibility:hidden}
+#splash img{width:132px;height:132px;border-radius:28px;box-shadow:0 0 40px #ff9c3a55,0 10px 30px #000c}
+#splash .orns{color:#d9a441;font-size:26px;letter-spacing:14px;text-shadow:0 0 10px #ffb04a88}
+#splash .dtx{font-family:var(--num);font-weight:700;font-size:clamp(18px,5.4vw,28px);letter-spacing:4px;line-height:1.55;color:#f3d48a;text-shadow:0 0 16px #ffb04a77,0 2px 0 #000;max-width:560px;text-wrap:balance}
+#splash .sub{font-family:var(--display);color:#ead7ad;font-size:20px;opacity:.85}
+#splash .bar{width:180px;height:4px;border-radius:4px;background:#ffffff1a;overflow:hidden}
+#splash .bar i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#8e1f17,#d9a441);transform-origin:left;animation:fill 3s linear forwards}
+@keyframes fill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@media (prefers-reduced-motion:no-preference){#splash img{animation:pop 1s cubic-bezier(.2,1.4,.4,1) both}#splash .dtx{animation:rise 1.4s ease-out .3s both,glow 2.2s ease-in-out 1.7s infinite alternate}#splash .orns,#splash .sub{animation:rise 1.4s ease-out .6s both}
+@keyframes pop{from{transform:scale(.6);opacity:0}}@keyframes rise{from{opacity:0;transform:translateY(10px);letter-spacing:9px}}@keyframes glow{to{text-shadow:0 0 28px #ffc76add,0 2px 0 #000}}}
 @media (prefers-reduced-motion:no-preference){.pulse{animation:pulse 1s ease-in-out infinite alternate}@keyframes pulse{to{transform:scale(1.03)}}}
 </style>
 </head>
 <body>
+<div id="splash" role="dialog" aria-label="Abertura"><img src="icon-512.png" alt=""><div class="orns">❦ ❦ ❦</div><div class="dtx">DE BENJA PRA SUA QUERIDA CANAAN</div><div class="sub">Chuta a Porta!</div><div class="bar"><i></i></div></div>
 <div id="app"></div>
 <div id="modal"><div class="sheet panel" id="sheet"></div></div>
 <div id="toast"></div>
@@ -342,7 +350,7 @@ const RULES=`<div class="rules small">
 <p><b>Raças e Classes:</b> uma de cada. Sangue Misturado permite 2 Raças; Duas Vocações, 2 Classes. Toque numa carta para ler seu poder.</p></div>`;
 
 function renderHome(){
-  $app.innerHTML=`<div class="dedic" role="note"><span class="orn">❦</span><span class="dtx">DE BENJA PRA SUA QUERIDA CANAAN</span><span class="orn flip">❦</span></div><div class="hero-title"><h1>Chuta a Porta!</h1><p>Um jogo de cartas de masmorra para 2 a 6 aventureiros. Chute portas, mate monstros, roube tesouros e apunhale seus amigos pelas costas. Quem chegar primeiro ao <b>nível 10</b> vence.</p></div>
+  $app.innerHTML=`<div class="hero-title"><h1>Chuta a Porta!</h1><p>Um jogo de cartas de masmorra para 2 a 6 aventureiros. Chute portas, mate monstros, roube tesouros e apunhale seus amigos pelas costas. Quem chegar primeiro ao <b>nível 10</b> vence.</p></div>
   <div class="panel"><h2>Cada um no seu celular</h2><p class="muted small">Um cria a sala e manda o convite no grupo. Cada um entra do próprio celular.</p>
     ${fdb?`<button class="main" id="goOnline">Jogar online</button>`:`<p class="small" style="color:var(--wax)">Sem conexão com o servidor das salas. Verifique a internet e recarregue.</p>`}</div>
   <div class="panel"><h2>Um celular só</h2><p class="muted small">Passa e joga: o celular vai de mão em mão.</p><button id="goLocal">Jogar no mesmo celular</button>${ls('chuta_local2')?`<button id="resumeLocal">Continuar partida salva</button>`:''}</div>
@@ -588,6 +596,7 @@ function openMenu(){openModal(()=>{const acts=[()=>openModal(()=>{document.getEl
   document.getElementById('sheet')._acts=acts;return `<h2>Menu</h2><button data-a="0">Regras</button><button data-a="1" class="danger">${MODE==='local'?'Sair (a partida fica salva)':'Sair da sala'}</button><button id="mclose">Fechar</button>`})}
 
 render();initOnline().catch(()=>{});
+(function(){const sp=document.getElementById('splash');if(!sp)return;let gone=false;const hide=()=>{if(gone)return;gone=true;sp.classList.add('out');setTimeout(()=>sp.remove(),1000)};const t0=Date.now();sp.onclick=()=>{if(Date.now()-t0>800)hide()};setTimeout(hide,3200)})();
 </script>
 </body>
 </html>
