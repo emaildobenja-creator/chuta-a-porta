@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chuta a Porta!</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#24160d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Chuta a Porta!">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=IM+Fell+English:ital@0;1&family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
+<style>
+/* Mundo único: mesa de taverna em carvalho escuro, painéis de pergaminho, lacres de cera vermelha e ouro velho. */
+:root{
+  --wood:#24160d; --wood2:#3a2416; --parch:#efe0bb; --parch2:#e2cc98; --ink:#2b1a0e; --muted:#6e5638;
+  --wax:#8e1f17; --gold:#b8862b; --moss:#3f6b2e;
+  --display:"MedievalSharp","Palatino Linotype",serif; --body:"IM Fell English","Georgia",serif; --num:"Cinzel","Georgia",serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--wood);background-image:repeating-linear-gradient(90deg,#ffffff05 0 2px,transparent 2px 38px),repeating-linear-gradient(0deg,#0000001a 0 1px,transparent 1px 7px),radial-gradient(ellipse at 50% 0,#6b3a14 0,transparent 65%);color:var(--ink);font-family:var(--body);font-size:16px;-webkit-tap-highlight-color:transparent}
+#app{max-width:720px;margin:0 auto;padding:12px 14px 90px;display:flex;flex-direction:column;gap:14px}
+h1,h2,h3{font-family:var(--display);font-weight:400;margin:0;text-wrap:balance}
+h1{font-size:46px;color:#f3d48a;text-shadow:0 2px 0 #000,0 0 18px #ff9c3a55;line-height:1}
+h2{font-size:23px;color:var(--wax)}
+h3{font-size:18px;color:var(--ink)}
+p{margin:0;line-height:1.4}
+.muted{color:var(--muted)}
+.small{font-size:14px}
+.panel{background:var(--parch);background-image:radial-gradient(ellipse at 20% 10%,#fff6dc 0,transparent 55%),radial-gradient(ellipse at 90% 100%,#d8bd85 0,transparent 60%);border:2px solid #7a5527;outline:1px solid #e9d39f;outline-offset:-6px;border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:10px;box-shadow:0 6px 18px #0008}
+button{font-family:var(--display);font-size:16px;border-radius:6px;padding:11px 14px;background:var(--parch2);color:var(--ink);border:2px solid #7a5527;cursor:pointer;box-shadow:0 3px 0 #5a3d1b}
+button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+button.main{background:var(--wax);color:#fbe9c6;border-color:#4d0f0a;box-shadow:0 3px 0 #4d0f0a,inset 0 0 0 2px #b53a2c}
+button.good{background:var(--moss);color:#f1f5d8;border-color:#203a16;box-shadow:0 3px 0 #203a16}
+button.danger{background:#5b1a3a;color:#f8dfe9;border-color:#2e0b1c;box-shadow:0 3px 0 #2e0b1c}
+button.gold{background:var(--gold);color:#2b1a0e;border-color:#6a4a10;box-shadow:0 3px 0 #6a4a10}
+button:active{transform:translateY(2px);box-shadow:none}
+button:disabled{opacity:.45}
+input{font-family:var(--body);font-size:18px;padding:11px;border-radius:6px;border:2px solid #7a5527;background:#fbf2da;color:var(--ink);width:100%}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.col{display:flex;flex-direction:column;gap:8px}
+.hdr{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.logo{font-family:var(--display);color:#f3d48a;font-size:24px;text-shadow:0 2px 0 #000}
+.pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;background:#fbf2da;border:1px solid #7a5527;font-family:var(--num);font-weight:700;font-size:13px;font-variant-numeric:tabular-nums;color:var(--ink)}
+.wood .pill{background:#3a2416;color:#f3d48a;border-color:#7a5527}
+.players{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.pchip{flex:0 0 auto;min-width:100px;text-align:left;font-family:var(--body);padding:8px 10px;background:var(--parch)}
+.pchip.turn{background:#f6d77c;border-color:var(--wax);box-shadow:0 3px 0 var(--wax)}
+.pchip.dead{opacity:.6}
+.pchip .lv{font-family:var(--num);font-weight:900;font-size:24px;color:var(--wax);line-height:1}
+.pchip .nm{font-family:var(--display);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px}
+.cards{display:flex;gap:8px;flex-wrap:wrap}
+.card{width:100px;min-height:136px;border-radius:6px;padding:6px 7px 7px;display:flex;flex-direction:column;gap:2px;color:var(--ink);background:#f8edcf;border:2px solid #3a2416;box-shadow:inset 0 0 0 3px #f8edcf,inset 0 0 0 4px var(--band),0 3px 0 #0006;cursor:pointer;text-align:left;font-family:var(--body);position:relative;--band:#7a5527}
+.card::before{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:var(--band);border-radius:4px 4px 0 0}
+.card .ce{font-size:28px;line-height:1.15;margin-top:3px}
+.card .cn{font-family:var(--display);font-size:13px;line-height:1.1;flex:1}
+.card .cv{font-family:var(--num);font-weight:900;font-size:19px;line-height:1;color:var(--band)}
+.card .ck{font-size:11px;font-style:italic;color:var(--muted);line-height:1.1}
+.card .tag{position:absolute;top:8px;right:6px;font-family:var(--num);font-size:9px;font-weight:900;background:var(--band);color:#fff;padding:1px 4px;border-radius:3px}
+.card.sel{outline:4px solid var(--gold);outline-offset:1px}
+.t-monster{--band:#8e1f17}.t-curse{--band:#4b2a6b}.t-enh,.t-wand{--band:#a14d0e}.t-race{--band:#2d6b5e}.t-class{--band:#1f4f7a}.t-hb,.t-sm,.t-cheat,.t-divine{--band:#6b5a12}
+.t-item{--band:#5b3d1c}.t-one{--band:#3f6b2e}.t-lvl{--band:#b8862b}.t-hire,.t-amulet{--band:#5a2b4a}
+.card.big{width:132px;min-height:176px}.card.big .ce{font-size:42px}.card.big .cn{font-size:16px}.card.big .cv{font-size:26px}
+.vs{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px;text-align:center}
+.vs .num{font-family:var(--num);font-weight:900;font-size:46px;line-height:1}
+.vs .hero{color:var(--moss)}.vs .mon{color:var(--wax)}
+.banner{padding:9px 12px;border-radius:6px;font-family:var(--display);text-align:center;border:2px solid}
+.banner.win{background:#dfe9c4;color:#203a16;border-color:var(--moss)}.banner.lose{background:#f1c9bd;color:#4d0f0a;border-color:var(--wax)}.banner.info{background:#f6e3a7;color:#4a3205;border-color:var(--gold)}
+.log{max-height:240px;overflow:auto;display:flex;flex-direction:column;font-size:14px}
+.log div{padding:5px 0;border-bottom:1px dashed #7a552755}
+.slotlbl{font-size:12px;color:var(--muted);font-style:italic}
+.sect{display:flex;flex-direction:column;gap:6px}
+#modal{position:fixed;inset:0;background:#120a05c4;display:none;align-items:flex-end;justify-content:center;z-index:20}
+#modal.on{display:flex}
+#modal .sheet{width:100%;max-width:720px;max-height:88%;overflow:auto;border-radius:10px 10px 0 0}
+#modal .sheet>button{width:100%;text-align:left}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--parch);border:2px solid var(--wax);color:var(--ink);padding:10px 16px;border-radius:6px;font-family:var(--display);z-index:30;display:none;max-width:90%;text-align:center;box-shadow:0 6px 18px #000a}
+.hero-title{display:flex;flex-direction:column;gap:8px;padding:16px 2px 4px;color:#ead7ad}
+.hero-title p{color:#ead7ad}
+.code{font-family:var(--num);font-weight:900;font-size:42px;letter-spacing:8px;color:var(--wax)}
+.viewer{display:flex;gap:6px;flex-wrap:wrap;align-items:center;color:#ead7ad}
+.viewer button{padding:5px 10px;font-size:14px}
+.viewer button.on{background:var(--gold)}
+details>summary{font-family:var(--display);cursor:pointer;color:var(--wax);font-size:18px}
+.rules p{margin-bottom:6px}
+@media (prefers-reduced-motion:no-preference){.pulse{animation:pulse 1s ease-in-out infinite alternate}@keyframes pulse{to{transform:scale(1.03)}}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal"><div class="sheet panel" id="sheet"></div></div>
+<div id="toast"></div>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+/* ===================== CARTAS ===================== */
+const DEFS={},DOOR_LIST=[],TRE_LIST=[];
+function def(deck,id,o,count){o.id=id;o.deck=deck;DEFS[id]=o;for(let i=0;i<(count||1);i++)(deck==='door'?DOOR_LIST:TRE_LIST).push(id)}
+function M(id,n,e,lv,tr,lu,bad,bt,extra,c){def('door',id,Object.assign({t:'monster',n,e,lv,tr,lu,bad,bt},extra||{}),c)}
+M('rato','Rato de Masmorra Manco','🐀',1,1,1,['feet'],'Morde seu tornozelo. Perca o item dos Pés.',{},2);
+M('goblin','Goblin Fofoqueiro','👺',1,1,1,['lvl1'],'Espalha boatos sobre você na vila. Perca 1 nível.',{vs:{elfo:3},sp:'+3 contra Elfos.'},2);
+M('galinha','Galinha do Feiticeiro','🐔',2,1,1,['lvl1'],'Bicadas mágicas. Perca 1 nível.',{fleeMod:-1,sp:'−1 para fugir dela.'},2);
+M('lesma','Lesma de Elmo','🐌',2,1,1,['head'],'Ela gruda no seu capacete. Perca o item de Cabeça.',{autoEscape:true,sp:'Fugir é automático (é uma lesma).'},1);
+M('esqueleto','Esqueleto Desempregado','💀',2,1,1,['lvl1'],'Ele chora no seu ombro por horas. Perca 1 nível.',{undead:true},2);
+M('sapo','Sapo Coroado','🐸',3,1,1,['hand'],'Exige um beijo. Você foge descartando toda a sua mão.',{},1);
+M('bruxa','Bruxa da Verruga','🧙',4,2,1,['class'],'Te transforma em aprendiz. Perca sua Classe.',{vs:{mago:3},sp:'+3 contra Magos.'},1);
+M('armadura','Armadura Assombrada','🪖',4,2,1,['body'],'Ela te despe à força. Perca o item de Corpo.',{undead:true},1);
+M('lobisomem','Lobisomem de Meio Expediente','🐺',6,2,1,['feet','lvl1'],'Rói suas botas e sua dignidade. Perca o item dos Pés e 1 nível.',{vs:{halfling:3},sp:'+3 contra Halflings.'},1);
+M('ogro','Ogro do Pedágio','👹',6,2,1,['hands'],'Cobra o pedágio em armas. Perca tudo o que está nas mãos.',{},1);
+M('troll','Troll da Ponte Velha','🧌',8,2,1,['best'],'Confisca seu melhor item como imposto.',{vs:{anao:5},sp:'+5 contra Anões.'},1);
+M('fantasma','Fantasma do Castelo','👻',8,2,1,['lvl2'],'Assombra seus sonhos. Perca 2 níveis.',{undead:true},1);
+M('mimico','Baú Mímico','🧰',10,3,1,['item','item'],'Engole 2 itens seus, à sorte.',{fleeMod:-2,sp:'−2 para fugir dele.'},1);
+M('cavaleiro','Cavaleiro Sem Cabeça','🏇',10,3,1,['head','lvl1'],'Leva sua cabeça emprestada. Perca o item de Cabeça e 1 nível.',{undead:true},1);
+M('grifo','Grifo Mal-Humorado','🦅',12,3,1,['lvl2'],'Te larga no ninho dele. Perca 2 níveis.',{noPursue:3,sp:'Não persegue quem tem nível 3 ou menos.'},1);
+M('necro','Necromante de Taverna','🧛',12,3,1,['race'],'Te transforma em humano comum. Perca suas Raças.',{vs:{clerigo:4},sp:'+4 contra Clérigos.'},1);
+M('gigante','Gigante Sonâmbulo','🗿',14,4,1,['lvl3'],'Pisa em você sem perceber. Perca 3 níveis.',{noPursue:4,sp:'Não persegue quem tem nível 4 ou menos.'},1);
+M('hidra','Hidra Tagarela','🐍',14,4,1,['hand','lvl1'],'Sete cabeças falando ao mesmo tempo. Descarte a mão e perca 1 nível.',{},1);
+M('reirato','Rei Rato de Mil Caudas','🐁',16,4,2,['best','lvl2'],'Seus súditos levam seu melhor item. Perca-o e 2 níveis.',{vs:{halfling:4},sp:'+4 contra Halflings.'},1);
+M('lich','Lich Contador do Reino','☠️',16,4,2,['death'],'Auditoria fatal. Você morre.',{undead:true,noPursue:5,sp:'Não persegue quem tem nível 5 ou menos.'},1);
+M('dragao','Dragão Aposentado','🐉',18,4,2,['death'],'Ele acorda de mau humor. Você morre.',{noPursue:5,sp:'Não persegue quem tem nível 5 ou menos.'},1);
+M('porao','O Bicho Indizível do Porão','🦑',20,5,2,['death'],'Você não consegue nem descrever. Morre.',{vs:{guerreiro:4},sp:'+4 contra Guerreiros.'},1);
+function C(id,n,e,bad,bt,c){def('door',id,{t:'curse',n,e,bad,bt},c)}
+C('gato','Maldição! Gato Preto Cruzou','🐈‍⬛',['lvl1'],'Perca 1 nível.',2);
+C('ferradura','Maldição! Ferradura ao Contrário','🧲',['feet'],'Perca o item dos Pés.');
+C('ferrugem','Maldição! Elmo Enferrujado','🔩',['head'],'Perca o item de Cabeça.');
+C('traca','Maldição! Traça na Túnica','🦋',['body'],'Perca o item de Corpo.');
+C('feitico','Maldição! Virou Sapo por um Dia','🐸',['race'],'Perca suas Raças.');
+C('excomunhao','Maldição! Excomungado','📜',['class'],'Perca sua Classe.');
+C('olhogordo','Maldição! Olho Gordo do Bardo','🧿',['minus3'],'−3 no seu próximo combate.');
+C('alforje','Maldição! Furo no Alforje','👝',['small'],'Perca um item pequeno à sua escolha… da sorte.');
+C('peste','Maldição! A Peste da Semana','🤧',['best'],'Perca seu melhor item.');
+function E(id,n,e,mod,tr,c,extra){def('door',id,Object.assign({t:'enh',n,e,mod,tr},extra||{}),c)}
+E('bombado','Bombado de Poção','💪',5,1,2);E('familia','Com Armadura de Família','🛡️',10,2,1);E('chocado','Recém-Chocado','🥚',-5,-1,2);
+E('reforco','Trouxe o Primo','👯',0,0,1,{dup:true});
+def('door','errante',{t:'wand',n:'Chegou Mais Um!',e:'🚪'},2);
+function R(id,n,e,race,txt){def('door',id,{t:'race',n,e,race,txt},3)}
+R('elfo','Elfo','🧝','elfo','+1 para fugir. Sobe 1 nível por monstro que ajudar a matar.');
+R('anao','Anão','🧔','anao','Carrega qualquer número de itens Grandes. Pode ter 6 cartas na mão.');
+R('halfling','Halfling','🧒','halfling','Vende 1 item por turno pelo dobro do preço. Se falhar na fuga, pode descartar 1 carta e rolar de novo.');
+function K(id,n,e,cls,txt){def('door',id,{t:'class',n,e,cls,txt},3)}
+K('guerreiro','Guerreiro','⚔️','guerreiro','Fúria: em combate, descarte até 3 cartas, +1 cada. Vence empates.');
+K('mago','Mago','🔮','mago','Voo: depois de rolar a fuga, descarte até 3 cartas, +1 cada. Encantar: descarte a mão inteira (mín. 3) para encantar um monstro sozinho e levar o tesouro, sem nível.');
+K('ladrao','Ladrão','🗡️','ladrao','Apunhalar: descarte 1 carta, −2 a um jogador em combate (1 vez por vítima). Furto: descarte 1 carta e tente roubar um item pequeno de alguém: 4+ no dado rouba; senão leva uma surra e perde 1 nível.');
+K('clerigo','Clérigo','✝️','clerigo','Ressurreição: ao chutar a porta, pode pegar a carta do topo do descarte de Portas descartando 1 carta. Expulsar: contra mortos-vivos, descarte até 3 cartas, +3 cada.');
+def('door','sangue',{t:'hb',n:'Sangue Misturado',e:'🧬',txt:'Jogue junto com uma Raça: você pode ter duas Raças ao mesmo tempo.'},2);
+def('door','vocacoes',{t:'sm',n:'Duas Vocações',e:'🎭',txt:'Jogue junto com uma Classe: você pode ter duas Classes ao mesmo tempo.'},2);
+def('door','jeitinho',{t:'cheat',n:'Jeitinho Real',e:'🤞',txt:'Equipe um item mesmo sem poder usá-lo (raça, classe ou limite de espaço). A carta fica presa ao item.'},1);
+def('door','milagre',{t:'divine',n:'Milagre do Padroeiro',e:'🙏',txt:'Todo Clérigo sobe 1 nível (não vale para o nível 10).'},1);
+function I(id,n,e,slot,b,g,extra){def('tre',id,Object.assign({t:'item',n,e,slot,b,g,hands:slot==='hand'?1:0},extra||{}))}
+I('balde','Elmo de Balde','🪣','head',1,200);I('capuz','Capuz do Bandoleiro','🥷','head',3,400,{cls:'ladrao'});I('chapeu','Chapéu Pontudo do Arquimago','🧙','head',3,400,{cls:'mago'});I('coroa','Coroa de Lata','👑','head',2,300);
+I('gibao','Gibão de Couro Velho','🧥','body',1,200);I('cota','Cota de Malha Furada','⛓️','body',2,400);I('gala','Armadura de Gala Real','🛡️','body',3,600,{big:true});I('tunica','Túnica Encantada','👘','body',3,400,{cls:'clerigo'});
+I('poca','Botas de Pular Poça','👢','feet',1,300);I('ligeiras','Botas Ligeiras','🥾','feet',0,400,{flee:2});I('sandalias','Sandálias do Peregrino','🩴','feet',1,200,{flee:1});
+I('espada','Espada Cega de Família','🗡️','hand',1,200);I('machadinha','Machadinha do Lenhador','🪓','hand',2,300);I('adaga','Adaga do Traidor','🔪','hand',3,400,{cls:'ladrao'});I('barril','Escudo de Tampa de Barril','🛢️','hand',2,300);
+I('maca','Maça de Cozinha','🍳','hand',3,400,{cls:'clerigo'});I('florete','Florete Elegante','🤺','hand',3,400,{race:'elfo'});I('cetro','Cetro Torto','🪄','hand',2,400,{cls:'mago'});I('lanca','Lança de Torneio','🏹','hand',2,300);
+I('martelo','Martelo do Ferreiro','🔨','hand',4,600,{hands:2,big:true});I('alabarda','Alabarda Desajeitada','🔱','hand',4,600,{hands:2,big:true});I('arco','Arco Longo da Floresta','🏹','hand',4,600,{hands:2,race:'elfo'});I('cajado','Cajado Flamejante','🔥','hand',5,800,{hands:2,cls:'mago'});
+I('picareta','Picareta de Mineiro','⛏️','hand',3,400,{hands:2,race:'anao'});I('estilingue','Estilingue de Bolso','🪀','hand',2,200,{race:'halfling'});
+I('capa','Capa Esfarrapada de Herói','🧣','acc',2,400);I('dente','Amuleto de Dente de Dragão','🦷','acc',1,300);I('joelheiras','Joelheiras de Cota','🦵','acc',1,200);I('catapulta','Catapulta de Bolso','🏰','acc',3,500,{big:true});I('aneldecobre','Anel de Cobre Polido','💍','acc',1,100);
+function O(id,n,e,b,g,c,extra){def('tre',id,Object.assign({t:'one',n,e,b,g},extra||{}),c)}
+O('coragem','Poção de Coragem Líquida','🧪',3,300,2);O('fogo','Frasco de Fogo Grego','🔥',3,300,1);O('abelhas','Saco de Abelhas','🐝',4,400,1);O('fedor','Bomba de Fedor','💨',2,100,2);O('pimenta','Pimenta do Reino','🌶️',2,100,1);O('sono','Poção do Sono Pesado','😴',3,200,1);O('torta','Torta na Viseira','🥧',3,200,1);
+O('sumico','Pó de Sumiço','✨',0,300,1,{escape:true});
+def('tre','escudeiro',{t:'hire',n:'Escudeiro de Aluguel',e:'🧑‍🌾',g:0,txt:'Fica na mesa: +1 de força. Sacrifique-o para escapar automaticamente de todos os monstros.'},1);
+def('tre','benzedeira',{t:'amulet',n:'Amuleto da Benzedeira',e:'🪬',g:500,txt:'Cancela automaticamente a próxima maldição jogada em você.'},1);
+function L(id,n,e){def('tre',id,{t:'lvl',n,e})}
+L('bolo','Comeu o Bolo do Rei','🎂');L('bajulou','Bajulou o Bardo','🎻');L('cocho','Achou Ouro no Cocho','🪙');L('heranca','Herança do Tio-Avô','📜');L('justa','Venceu a Justa','🏇');L('bencao','Bênção da Bruxa Boa','🌟');L('dragaoouro','Vendeu Escama de Dragão','🐲');
+
+const KIND={monster:'Monstro',curse:'Maldição',enh:'Reforço de monstro',wand:'Porta',race:'Raça',class:'Classe',hb:'Especial',sm:'Especial',cheat:'Trapaça',divine:'Especial',item:'Item',one:'Uso único',lvl:'Sobe nível',hire:'Mercenário',amulet:'Amuleto'};
+const SLOTN={head:'Cabeça',body:'Corpo',feet:'Pés',hand:'Mão',acc:'Acessório'};
+const RACEN={elfo:'Elfo',anao:'Anão',halfling:'Halfling'},CLSN={guerreiro:'Guerreiro',mago:'Mago',ladrao:'Ladrão',clerigo:'Clérigo'};
+const BADTXT={lvl1:'perde 1 nível',lvl2:'perde 2 níveis',lvl3:'perde 3 níveis',head:'perde o item de Cabeça',body:'perde o item de Corpo',feet:'perde o item dos Pés',hands:'perde os itens das mãos',best:'perde o melhor item',item:'perde um item à sorte',small:'perde um item pequeno',hand:'descarta a mão',class:'perde a Classe',race:'perde a Raça',death:'MORRE',minus3:'leva −3 no próximo combate'};
+
+function describe(d){
+  switch(d.t){
+    case 'monster':return `Nível ${d.lv} · ${d.tr} tesouro${d.tr>1?'s':''} · vale ${d.lu} nível${d.lu>1?'is':''}.${d.undead?' <i>Morto-vivo.</i>':''}${d.sp?' '+d.sp:''}<br><b>Coisa ruim:</b> ${d.bt}`;
+    case 'curse':return `${d.bt} Se aparecer ao chutar a porta, pega em você. Da mão, jogue em qualquer um, a qualquer hora.`;
+    case 'enh':return d.dup?'Jogue num monstro em combate: chega um gêmeo idêntico, com o dobro de força, tesouros e níveis.':`Jogue num monstro em combate: ${d.mod>0?'+':''}${d.mod} de força, ${d.tr>=0?'+':''}${d.tr} tesouro.`;
+    case 'wand':return 'Jogue em qualquer combate junto com um monstro da sua mão: ele entra na briga.';
+    case 'race':case 'class':case 'hb':case 'sm':case 'cheat':case 'divine':case 'hire':case 'amulet':return d.txt+(d.g?` Vale ${d.g} moedas.`:'');
+    case 'item':return `${SLOTN[d.slot]}${d.hands===2?' (2 mãos)':''}${d.big?' · <b>Grande</b>':''} · +${d.b} de força${d.flee?` · +${d.flee} para fugir`:''} · vale ${d.g} moedas.${d.race?` Só para ${RACEN[d.race]}.`:''}${d.cls?` Só para ${CLSN[d.cls]}.`:''}`;
+    case 'one':return d.escape?`Uso único: depois de falhar na fuga, escape automaticamente. Vale ${d.g} moedas.`:`Uso único em qualquer combate: +${d.b} para os heróis OU para o monstro. Vale ${d.g} moedas.`;
+    case 'lvl':return 'Suba 1 nível a qualquer hora. Não serve para chegar ao nível 10.';
+  }}
+function cardHTML(c,cls){const d=DEFS[c.d];let v='',k=KIND[d.t];
+  if(d.t==='monster')v='Nv '+d.lv;else if(d.t==='item'){v='+'+d.b;k=SLOTN[d.slot]+(d.hands===2?' · 2 mãos':'')+(d.race?' · '+RACEN[d.race]:'')+(d.cls?' · '+CLSN[d.cls]:'')}else if(d.t==='one')v=d.escape?'Fuga':'+'+d.b;else if(d.t==='enh')v=d.dup?'×2':(d.mod>0?'+':'')+d.mod;else if(d.t==='lvl')v='+1 Nv';else if(d.t==='hire')v='+1';
+  return `<button class="card t-${d.t} ${cls||''}" data-u="${c.u}" aria-label="${esc(d.n)}">${d.big?'<span class="tag">GRANDE</span>':''}${c.ch?'<span class="tag" style="top:24px">🤞</span>':''}<span class="ce">${d.e}</span><span class="cn">${esc(d.n)}</span><span class="cv">${v}</span><span class="ck">${k}</span></button>`}
+
+/* ===================== MOTOR ===================== */
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function d6(){return 1+Math.floor(Math.random()*6)}
+function P(s,id){return s.players.find(p=>p.id===id)}
+function cur(s){return s.players[s.turn]}
+function log(s,m){s.log.unshift(m);if(s.log.length>50)s.log.length=50}
+function discard(s,c){if(!c)return;delete c.ch;(DEFS[c.d].deck==='door'?s.doorDisc:s.treDisc).push(c)}
+function draw(s,deck){const k=deck==='door'?'door':'tre',dk=k+'Disc';if(!s[k].length){s[k]=shuffle(s[dk]);s[dk]=[];if(s[k].length)log(s,'🔀 O baralho foi reembaralhado.')}return s[k].pop()||null}
+function take(arr,u){const i=arr.findIndex(c=>c.u===u);return i<0?null:arr.splice(i,1)[0]}
+function races(p){return p.races.map(c=>DEFS[c.d].race)}
+function classes(p){return p.classes.map(c=>DEFS[c.d].cls)}
+function has(p,k){return races(p).includes(k)||classes(p).includes(k)}
+function usable(p,c){const d=DEFS[c.d];if(c.ch)return true;if(d.race&&!races(p).includes(d.race))return false;if(d.cls&&!classes(p).includes(d.cls))return false;return true}
+function power(p){return p.level+p.eq.reduce((a,c)=>a+(usable(p,c)?DEFS[c.d].b||0:0),0)+(p.hire?1:0)}
+function fleeBonus(p){return p.eq.reduce((a,c)=>a+(usable(p,c)?DEFS[c.d].flee||0:0),0)+(has(p,'elfo')?1:0)}
+function handLimit(p){return has(p,'anao')?6:5}
+function inPlay(p){return p.eq.concat(p.carried)}
+function bigCount(p){return inPlay(p).filter(c=>DEFS[c.d].big).length}
+function newPlayer(id,name){return{id,name:name.slice(0,16),level:1,hand:[],eq:[],carried:[],races:[],classes:[],hb:null,sm:null,hire:null,nextMod:0,dead:false,respawn:false,fresh:[],soldDouble:false}}
+function newGame(code,host){return{code,host,status:'lobby',players:[],turn:0,phase:'kick',door:[],doorDisc:[],tre:[],treDisc:[],combat:null,loot:null,trades:[],log:[],winner:null,flip:null,roll:null,v:0}}
+function give(s,p,c){if(!c)return;if(p.dead){discard(s,c);return}p.hand.push(c);p.fresh.push(c.u)}
+function startGame(s){let n=0;s.door=shuffle(DOOR_LIST.map(d=>({u:'c'+(n++),d})));s.tre=shuffle(TRE_LIST.map(d=>({u:'c'+(n++),d})));s.doorDisc=[];s.treDisc=[];
+  s.players=s.players.map(p=>newPlayer(p.id,p.name));s.players.forEach(p=>{for(let i=0;i<4;i++){give(s,p,draw(s,'door'));give(s,p,draw(s,'tre'))}});
+  Object.assign(s,{turn:Math.floor(Math.random()*s.players.length),phase:'kick',combat:null,loot:null,trades:[],winner:null,flip:null,roll:null,status:'play',log:[]});
+  log(s,`📯 A aventura começou! Todos podem baixar Raças, Classes e Itens. ${cur(s).name} chuta a primeira porta.`)}
+function lvlUp(s,p,n,canWin){const before=p.level;p.level=Math.min(canWin?10:9,p.level+n);if(p.level>=10&&canWin){s.status='over';s.winner=p.id;log(s,`🏆 ${p.name} chegou ao nível 10 e VENCEU!`)}return p.level-before}
+function loseItem(s,p,c){if(!c)return;take(p.eq,c.u)||take(p.carried,c.u);discard(s,c)}
+function curseHit(s,p,d,by){const a=p.hand.find(c=>DEFS[c.d].t==='amulet')||p.carried.find(c=>DEFS[c.d].t==='amulet');
+  if(a){take(p.hand,a.u)||take(p.carried,a.u);discard(s,a);log(s,`🪬 O Amuleto da Benzedeira de ${p.name} anulou ${d.n}!`);return}
+  d.bad.forEach(b=>applyBad(s,p,b));log(s,`${d.e} ${by?by+' jogou '+d.n+' em '+p.name:p.name+' caiu em '+d.n}: ${d.bad.map(b=>BADTXT[b]).join(' e ')}.`)}
+function applyBad(s,p,code){if(p.dead)return;const ip=inPlay(p);let x;
+  switch(code){
+    case 'lvl1':case 'lvl2':case 'lvl3':p.level=Math.max(1,p.level-(+code[3]));break;
+    case 'head':case 'body':case 'feet':ip.filter(c=>DEFS[c.d].slot===code).forEach(c=>loseItem(s,p,c));break;
+    case 'hands':ip.filter(c=>DEFS[c.d].slot==='hand'&&p.eq.includes(c)).forEach(c=>loseItem(s,p,c));break;
+    case 'best':x=ip.slice().sort((a,b)=>(DEFS[b.d].b||0)-(DEFS[a.d].b||0))[0];loseItem(s,p,x);break;
+    case 'item':if(ip.length)loseItem(s,p,ip[Math.floor(Math.random()*ip.length)]);break;
+    case 'small':{const sm=ip.filter(c=>!DEFS[c.d].big);if(sm.length)loseItem(s,p,sm[Math.floor(Math.random()*sm.length)]);break}
+    case 'hand':p.hand.splice(0).forEach(c=>discard(s,c));break;
+    case 'class':p.classes.splice(0).forEach(c=>discard(s,c));discard(s,p.sm);p.sm=null;fixRestrictions(s,p);break;
+    case 'race':p.races.splice(0).forEach(c=>discard(s,c));discard(s,p.hb);p.hb=null;fixRestrictions(s,p);break;
+    case 'minus3':p.nextMod=(p.nextMod||0)-3;break;
+    case 'death':kill(s,p);break;
+  }}
+function fixRestrictions(s,p){p.eq.filter(c=>!usable(p,c)).forEach(c=>p.carried.push(take(p.eq,c.u)));
+  if(!has(p,'anao')){while(bigCount(p)>1){const b=inPlay(p).filter(c=>DEFS[c.d].big).pop();loseItem(s,p,b);log(s,`${p.name} não aguenta tanto peso e larga ${DEFS[b.d].n}.`)}}}
+function kill(s,p){const pile=[...p.hand.splice(0),...p.eq.splice(0),...p.carried.splice(0)];if(p.hire){pile.push(p.hire);p.hire=null}pile.forEach(c=>delete c.ch);
+  p.dead=true;p.respawn=true;p.nextMod=0;log(s,`☠️ ${p.name} morreu! Mantém nível, Raça e Classe, mas os outros vão saquear o corpo.`);
+  const order=s.players.filter(o=>o.id!==p.id&&!o.dead).sort((a,b)=>b.level-a.level||Math.random()-.5).map(o=>o.id);
+  if(pile.length&&order.length){s.loot={dead:p.id,pile,order,i:0}}else pile.forEach(c=>discard(s,c))}
+function lootNext(s){const L=s.loot;L.i++;if(L.i>=L.order.length||!L.pile.length){L.pile.forEach(c=>discard(s,c));s.loot=null;log(s,'O resto do corpo foi para o descarte.')}}
+
+/* ---- combate ---- */
+function startCombat(s,p,card){s.combat={fighter:p.id,helper:null,ask:0,offers:[],monsters:[{c:card,mod:0,tr:0,enh:[]}],heroMod:0,monMod:0,used:[],resolveAt:0,pw:{},stab:[],flee:null};s.phase='combat'}
+function combatants(s){const c=s.combat;return[c.fighter,c.helper].filter(Boolean).map(id=>P(s,id))}
+function totals(s){const c=s.combat,f=P(s,c.fighter),h=c.helper?P(s,c.helper):null,cs=combatants(s);
+  let hero=cs.reduce((a,p)=>a+power(p)+(p.nextMod||0),0)+c.heroMod+Object.values(c.pw).reduce((a,v)=>a+v,0);
+  let mon=c.monMod;c.monsters.forEach(m=>{const d=DEFS[m.c.d];let v=d.lv+m.mod;if(d.vs)Object.entries(d.vs).forEach(([k,b])=>{if(cs.some(p=>has(p,k)))v+=b});mon+=m.twin?v*2:v});
+  mon=Math.max(0,mon);return{hero,mon,win:cs.some(p=>has(p,'guerreiro'))?hero>=mon:hero>mon}}
+function bump(s){if(s.combat&&s.combat.resolveAt)s.combat.resolveAt=Date.now()+15000}
+function endCombat(s){const c=s.combat;c.monsters.forEach(m=>{discard(s,m.c);m.enh.forEach(e=>discard(s,e))});c.used.forEach(u=>discard(s,u));
+  combatants(s).forEach(p=>p.nextMod=0);s.combat=null;if(s.status==='play')s.phase='charity'}
+function reward(s,levels){const c=s.combat,f=P(s,c.fighter),h=c.helper?P(s,c.helper):null;
+  let tr=c.monsters.reduce((a,m)=>a+Math.max(0,(DEFS[m.c.d].tr+m.tr)*(m.twin?2:1)),0);const ask=h?Math.min(c.ask,tr):0;
+  for(let i=0;i<tr-ask;i++)give(s,f,draw(s,'tre'));for(let i=0;i<ask;i++)give(s,h,draw(s,'tre'));
+  const lv=levels?c.monsters.reduce((a,m)=>a+DEFS[m.c.d].lu*(m.twin?2:1),0):0;const nm=c.monsters.length+c.monsters.filter(m=>m.twin).length;
+  endCombat(s);if(h&&levels&&has(h,'elfo')){lvlUp(s,h,nm,false);log(s,`🧝 ${h.name} é Elfo e sobe ${nm} nível por ajudar.`)}
+  return{tr,ask,lv,f}}
+function finalize(s){const c=s.combat;if(!c||!c.resolveAt||c.flee||Date.now()<c.resolveAt-300)return false;
+  const t=totals(s),f=P(s,c.fighter),h=c.helper?P(s,c.helper):null;
+  if(!t.win){c.resolveAt=0;log(s,`😬 Sacanearam! Monstros ${t.mon} × ${t.hero} heróis. Jogue mais cartas ou fuja.`);return}
+  const nm=f.name+(h?' e '+h.name:'');const r=reward(s,true);
+  log(s,`⚔️ ${nm} ${h?'venceram':'venceu'} (${t.hero} × ${t.mon})! ${f.name} sobe ${r.lv} nível${r.lv>1?'is':''} e leva ${r.tr-r.ask} tesouro${r.tr-r.ask===1?'':'s'}${h?`; ${h.name} leva ${r.ask}`:''}.`);lvlUp(s,P(s,f.id),r.lv,true)}
+function needFor(s,p,m){const d=DEFS[m.c.d];return Math.min(6,Math.max(1,5-fleeBonus(p)-(d.fleeMod||0)))}
+function startFlee(s){const c=s.combat;const q=[];combatants(s).forEach(p=>c.monsters.forEach((m,mi)=>{const d=DEFS[m.c.d];const reps=m.twin?2:1;for(let r=0;r<reps;r++){
+    if(d.autoEscape)log(s,`🐌 ${p.name} escapa de ${d.n} sem esforço.`);else if(d.noPursue&&p.level<=d.noPursue)log(s,`😴 ${d.n} nem se dá ao trabalho de perseguir ${p.name}.`);else q.push({pid:p.id,mi})}}));
+  c.flee={q,i:0,roll:null,bonus:0,rerolled:false};c.resolveAt=0;advanceFlee(s)}
+function advanceFlee(s){const c=s.combat,F=c.flee;while(F.i<F.q.length&&P(s,F.q[F.i].pid).dead)F.i++;if(F.i>=F.q.length){log(s,'A fuga terminou.');endCombat(s);return}F.roll=null;F.bonus=0;F.rerolled=false}
+function fleeSuccess(s){const F=s.combat.flee,st=F.q[F.i],p=P(s,st.pid),m=s.combat.monsters[st.mi];log(s,`🏃 ${p.name} escapou de ${DEFS[m.c.d].n}.`);F.i++;advanceFlee(s)}
+function fleeFail(s){const F=s.combat.flee,st=F.q[F.i],p=P(s,st.pid),d=DEFS[s.combat.monsters[st.mi].c.d];log(s,`💥 ${p.name} não escapou de ${d.n}: ${d.bt}`);d.bad.forEach(b=>applyBad(s,p,b));F.i++;advanceFlee(s)}
+function fleeEscapeAll(s,pid){const F=s.combat.flee;F.q=F.q.filter((x,k)=>k<F.i||x.pid!==pid);advanceFlee(s)}
+
+/* ---- itens ---- */
+function canPlace(p,d,eq,cheat){if(!eq)return true;if(!cheat){if(d.race&&!races(p).includes(d.race))return 'Só '+RACEN[d.race]+' pode usar isso.';if(d.cls&&!classes(p).includes(d.cls))return 'Só '+CLSN[d.cls]+' pode usar isso.'}return true}
+function placeItem(s,p,c,equipIt,cheat){const d=DEFS[c.d];
+  if(d.big&&!has(p,'anao')&&bigCount(p)>=1&&!cheat)return fail('Você só pode ter 1 item Grande (Anões podem ter vários).');
+  const ok=canPlace(p,d,equipIt,cheat);if(ok!==true){if(equipIt)return fail(ok)}
+  if(cheat)c.ch=true;
+  if(!equipIt){p.carried.push(c);return true}
+  if(['head','body','feet'].includes(d.slot))p.eq.filter(x=>DEFS[x.d].slot===d.slot).forEach(x=>p.carried.push(take(p.eq,x.u)));
+  if(d.slot==='hand'){const used=()=>p.eq.filter(x=>DEFS[x.d].slot==='hand').reduce((a,x)=>a+DEFS[x.d].hands,0);while(used()+d.hands>2){const x=p.eq.find(x=>DEFS[x.d].slot==='hand');p.carried.push(take(p.eq,x.u))}}
+  p.eq.push(c);return true}
+function nextTurn(s){s.players.forEach(p=>{p.fresh=[];p.soldDouble=false;if(p.dead){p.dead=false}});s.turn=(s.turn+1)%s.players.length;s.phase='kick';s.flip=null;const p=cur(s);
+  if(p.respawn){p.respawn=false;for(let i=0;i<2;i++){give(s,p,draw(s,'door'));give(s,p,draw(s,'tre'))}log(s,`🔁 ${p.name} volta à vida com 4 cartas novas.`)}
+  log(s,`➡️ Vez de ${p.name}.`)}
+
+/* ===================== ESTADO / SYNC ===================== */
+let MODE=null,S=null,myId=null,CODE=null,unsub=null,busy=false,viewer=null,lastTurnKey='',modalFn=null,screen='home';
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function esc(t){return String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v)}catch(e){return null}}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(()=>t.style.display='none',3400)}
+function fail(m){toast(m);return false}
+function me(){return MODE==='local'?viewer:myId}
+function clone(o){return JSON.parse(JSON.stringify(o))}
+const FIREBASE_CONFIG={apiKey:"AIzaSyC75mAC2KGOWUglia5fQL98Dna5LjAqNeY",authDomain:"chuta-a-porta.firebaseapp.com",databaseURL:"https://chuta-a-porta-default-rtdb.firebaseio.com",projectId:"chuta-a-porta",appId:"1:825261945950:web:11143369a10c509ed970cf"};
+let fdb=null;
+async function act(fn){if(!S)return;
+  if(MODE==='local'){const s=clone(S);if(fn(s)===false)return;S=s;ls('chuta_local2',JSON.stringify(S));render();return}
+  if(busy)return;busy=true;let aborted=false;
+  try{const res=await fdb.ref('games/'+CODE).transaction(curv=>{if(!curv)return curv;aborted=false;const s=JSON.parse(curv.j);if(fn(s)===false){aborted=true;return}s.v=(s.v||0)+1;return{j:JSON.stringify(s),t:Date.now()}},undefined,false);
+    const v=res.snapshot.val();if(!v)toast('Essa sala não existe mais.');else if(!aborted&&res.committed){S=JSON.parse(v.j);render()}
+  }catch(e){toast('Sem conexão com o servidor. Tente de novo.')}
+  finally{busy=false}}
+function watch(code){if(unsub)unsub();CODE=code;ls('chuta_code2',code);let got=false;const t=setTimeout(()=>{if(!got)toast('Ainda conectando à sala…')},10000);
+  const ref=fdb.ref('games/'+code);const cb=snap=>{got=true;clearTimeout(t);const v=snap.val();if(!v){S=null;screen='home';ls('chuta_code2',null);render();return}S=JSON.parse(v.j);screen='game';render()};
+  ref.on('value',cb,()=>{clearTimeout(t);toast('Conexão perdida com a sala. Recarregue a página.')});unsub=()=>ref.off('value',cb)}
+async function initOnline(){
+  myId=ls('chuta_id');if(!myId){myId='p'+Math.random().toString(36).slice(2,10);ls('chuta_id',myId)}
+  try{if(FIREBASE_CONFIG&&window.firebase){firebase.initializeApp(FIREBASE_CONFIG);fdb=firebase.database()}}catch(e){fdb=null}
+  const q=new URLSearchParams(location.search).get('sala');if(q){ls('chuta_join',q.toUpperCase().slice(0,4));history.replaceState(null,'',location.pathname);if(!ls('chuta_code2'))screen='online'}
+  render();
+  const saved=ls('chuta_code2');if(fdb&&saved&&!MODE){MODE='online';watch(saved)}}
+let deferredInstall=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;if(screen==='home')render()});
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+function isStandalone(){return matchMedia('(display-mode: standalone)').matches||navigator.standalone}
+function installHTML(){if(isStandalone())return '';const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  return `<div class="panel"><h2>Instalar no celular</h2>${deferredInstall?`<button class="gold" id="install">📲 Instalar o app</button>`:ios?`<p class="small">No iPhone: no Safari, toque em <b>Compartilhar</b> e depois em <b>Adicionar à Tela de Início</b>.</p>`:`<p class="small">No menu do navegador (⋮), toque em <b>Instalar app</b> ou <b>Adicionar à tela inicial</b>.</p>`}</div>`}
+
+/* ===================== UI ===================== */
+const $app=document.getElementById('app');
+function on(sel,fn){const el=$app.querySelector(sel);if(el)el.onclick=fn}
+function render(){
+  if(MODE==='local'&&S&&S.status==='play'){const k=S.turn+':'+(S.combat?1:0)+':'+(S.loot?S.loot.i:'-')+':'+(S.combat&&S.combat.flee?S.combat.flee.i:'-');if(k!==lastTurnKey){lastTurnKey=k;if(S.loot)viewer=S.loot.order[S.loot.i];else if(S.combat&&S.combat.flee&&S.combat.flee.q[S.combat.flee.i])viewer=S.combat.flee.q[S.combat.flee.i].pid;else if(!S.combat)viewer=cur(S).id}}
+  if(screen==='home')return renderHome();if(screen==='online')return renderOnlineSetup();if(screen==='local')return renderLocalSetup();
+  if(!S)return renderHome();if(S.status==='lobby')return renderLobby();
+  renderGame();if(modalFn)refreshModal()}
+
+const RULES=`<div class="rules small">
+<p><b>Objetivo:</b> chegar ao nível 10. O último nível só sai matando um monstro.</p>
+<p><b>Seu turno:</b> 1) <b>Chute a porta</b>. Monstro: lute. Maldição: pega em você. Outra coisa: vai para a mão. 2) Se não lutou: <b>Procure encrenca</b> (lute com um monstro da sua mão) ou <b>saqueie a sala</b> (pegue uma Porta escondida). 3) <b>Caridade</b>: com mais de 5 cartas (6 para Anão), o excesso vai para o jogador de nível mais baixo. Se o mais baixo for você, descarte.</p>
+<p><b>Combate:</b> força = nível + itens equipados + bônus. Vença se for maior que o monstro (Guerreiro vence empate). Vencendo: sobe 1 nível por monstro (alguns valem 2) e pega os tesouros. Ao apertar Lutar, os outros têm 15 segundos para sacanear.</p>
+<p><b>Ajuda:</b> peça ajuda e negocie: o ajudante diz quantos tesouros quer. Elfo ajudante sobe de nível. Ajudante não ganha nível (exceto Elfo).</p>
+<p><b>Fuga:</b> cada pessoa rola contra cada monstro: 5 ou 6 escapa. Quem falha sofre a Coisa Ruim. Morrer: você perde tudo, os outros saqueiam seu corpo em ordem de nível, e você volta com 4 cartas no seu próximo turno.</p>
+<p><b>Itens:</b> baixe itens na mesa no seu turno fora de combate (ou assim que os ganhar). Um de cada: Cabeça, Corpo, Pés; até 2 mãos; acessórios à vontade; só 1 item Grande (Anão: vários). Itens podem ser trocados entre jogadores fora de combate. Venda itens no seu turno: cada 1000 moedas de uma vez = 1 nível, sem troco.</p>
+<p><b>A qualquer hora:</b> maldições, cartas de subir nível, itens de uso único em qualquer combate, reforços de monstro, Chegou Mais Um!, abandonar Raça ou Classe.</p>
+<p><b>Raças e Classes:</b> uma de cada. Sangue Misturado permite 2 Raças; Duas Vocações, 2 Classes. Toque numa carta para ler seu poder.</p></div>`;
+
+function renderHome(){
+  $app.innerHTML=`<div class="hero-title"><h1>Chuta a Porta!</h1><p>Um jogo de cartas de masmorra para 2 a 6 aventureiros. Chute portas, mate monstros, roube tesouros e apunhale seus amigos pelas costas. Quem chegar primeiro ao <b>nível 10</b> vence.</p></div>
+  <div class="panel"><h2>Cada um no seu celular</h2><p class="muted small">Um cria a sala e manda o convite no grupo. Cada um entra do próprio celular.</p>
+    ${fdb?`<button class="main" id="goOnline">Jogar online</button>`:`<p class="small" style="color:var(--wax)">Sem conexão com o servidor das salas. Verifique a internet e recarregue.</p>`}</div>
+  <div class="panel"><h2>Um celular só</h2><p class="muted small">Passa e joga: o celular vai de mão em mão.</p><button id="goLocal">Jogar no mesmo celular</button>${ls('chuta_local2')?`<button id="resumeLocal">Continuar partida salva</button>`:''}</div>
+  ${installHTML()}<div class="panel"><h2>Regras</h2>${RULES}</div>`;
+  on('#install',async()=>{if(!deferredInstall)return;deferredInstall.prompt();try{await deferredInstall.userChoice}catch(e){}deferredInstall=null;render()});
+  on('#goOnline',()=>{screen='online';render()});on('#goLocal',()=>{screen='local';render()});
+  on('#resumeLocal',()=>{try{S=JSON.parse(ls('chuta_local2'));MODE='local';viewer=cur(S).id;lastTurnKey='';screen='game';render()}catch(e){toast('Não deu para carregar.')}})}
+function renderOnlineSetup(){
+  $app.innerHTML=`<div class="hdr"><span class="logo">Chuta a Porta!</span><button id="back">Voltar</button></div>
+  <div class="panel"><label for="nick"><h3>Seu nome de aventureiro</h3></label><input id="nick" maxlength="16" value="${esc(ls('chuta_nick')||'')}" placeholder="Ex.: Sir Zé"></div>
+  <div class="panel"><h2>Abrir uma sala</h2><button class="main" id="create">Criar sala nova</button></div>
+  <div class="panel"><h2>Entrar numa sala</h2><label for="code" class="muted small">Código de 4 letras</label><input id="code" maxlength="4" style="text-transform:uppercase;letter-spacing:4px" placeholder="ABCD" value="${esc(ls('chuta_join')||'')}"><button id="join">Entrar</button></div>`;
+  on('#back',()=>{screen='home';render()});
+  const nick=()=>{const n=document.getElementById('nick').value.trim();if(!n){toast('Escreva seu nome.');return null}ls('chuta_nick',n);return n};
+  on('#create',async()=>{const n=nick();if(!n)return;const code=Array.from({length:4},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.floor(Math.random()*24)]).join('');
+    const s=newGame(code,myId);s.players.push(newPlayer(myId,n));log(s,`🏰 ${n} abriu a sala ${code}.`);
+    try{const ex=await fdb.ref('games/'+code).get();if(ex.exists()&&Date.now()-(ex.val().t||0)<864e5)return toast('Tente de novo.');await fdb.ref('games/'+code).set({j:JSON.stringify(s),t:Date.now()});MODE='online';S=s;watch(code)}catch(e){toast('Não deu para criar a sala. Verifique a internet.')}});
+  on('#join',async()=>{const n=nick();if(!n)return;const code=document.getElementById('code').value.trim().toUpperCase();if(code.length!==4)return toast('O código tem 4 letras.');
+    try{const snap=await fdb.ref('games/'+code).get();if(!snap.exists())return toast('Sala não encontrada.');ls('chuta_join',null);MODE='online';S=JSON.parse(snap.val().j);CODE=code;
+      await act(s=>{if(P(s,myId))return;if(s.status!=='lobby')return fail('Essa partida já começou.');if(s.players.length>=6)return fail('Sala cheia (6 jogadores).');s.players.push(newPlayer(myId,n));log(s,`👋 ${n} entrou.`)});watch(code)}catch(e){toast('Não deu para entrar.')}})}
+function renderLocalSetup(){const names=(ls('chuta_lnames')||'').split('|').filter(Boolean);
+  $app.innerHTML=`<div class="hdr"><span class="logo">Chuta a Porta!</span><button id="back">Voltar</button></div>
+  <div class="panel"><h2>Quem vai jogar?</h2><p class="muted small">De 2 a 6 jogadores. Deixe em branco quem não vai jogar.</p>
+  ${[0,1,2,3,4,5].map(i=>`<input id="ln${i}" maxlength="16" aria-label="Jogador ${i+1}" placeholder="Jogador ${i+1}" value="${esc(names[i]||'')}">`).join('')}
+  <button class="main" id="startL">Começar partida</button></div>`;
+  on('#back',()=>{screen='home';render()});
+  on('#startL',()=>{const ns=[0,1,2,3,4,5].map(i=>document.getElementById('ln'+i).value.trim()).filter(Boolean);if(ns.length<2)return toast('Precisa de pelo menos 2 jogadores.');
+    ls('chuta_lnames',ns.join('|'));const s=newGame('LOCAL','l0');ns.forEach((n,i)=>s.players.push(newPlayer('l'+i,n)));startGame(s);MODE='local';S=s;viewer=cur(s).id;lastTurnKey='';screen='game';ls('chuta_local2',JSON.stringify(S));render()})}
+function renderLobby(){const isHost=S.host===myId;
+  $app.innerHTML=`<div class="hdr"><span class="logo">Chuta a Porta!</span><button id="leave">Sair</button></div>
+  <div class="panel" style="align-items:center;text-align:center"><p class="muted">Código da sala</p><div class="code">${esc(S.code)}</div><p class="muted small">Mande o convite no grupo. Quem abrir o link cai direto nesta sala.</p><button class="gold" id="invite">📨 Convidar amigos</button></div>
+  <div class="panel"><h2>Aventureiros (${S.players.length}/6)</h2>${S.players.map(p=>`<div class="row"><span class="pill">${p.id===S.host?'👑':'🛡️'}</span><b>${esc(p.name)}</b>${p.id===myId?'<span class="muted small">(você)</span>':''}</div>`).join('')}
+  ${isHost?`<button class="main" id="go" ${S.players.length<2?'disabled':''}>${S.players.length<2?'Esperando mais gente…':'Começar partida'}</button>`:`<p class="muted">Esperando o anfitrião começar…</p>`}</div>`;
+  on('#invite',async()=>{const url=location.origin+location.pathname+'?sala='+S.code;const txt=`Bora jogar Chuta a Porta! Sala ${S.code}: ${url}`;
+    try{if(navigator.share){await navigator.share({title:'Chuta a Porta!',text:txt});return}}catch(e){return}
+    try{await navigator.clipboard.writeText(txt);toast('Convite copiado! Cole no grupo.')}catch(e){toast(url)}});
+  on('#leave',leave);on('#go',()=>act(s=>{if(s.players.length<2)return fail('Precisa de 2 jogadores.');startGame(s)}))}
+function leave(){if(unsub)unsub();unsub=null;ls('chuta_code2',null);S=null;MODE=null;screen='home';render()}
+
+function tableCards(p,mine){const lbl=(t,cs)=>cs.length?`<div class="sect"><span class="slotlbl">${t}</span><div class="cards">${cs.map(c=>cardHTML(c)).join('')}</div></div>`:'';
+  const ch=[...p.races,...(p.hb?[p.hb]:[]),...p.classes,...(p.sm?[p.sm]:[]),...(p.hire?[p.hire]:[])];
+  const out=lbl('Raça, Classe e ajudantes',ch)+lbl('Equipado (conta na força)',p.eq)+lbl('Carregado (na mesa, sem bônus)',p.carried);
+  return out||`<p class="small muted">${mine?'Nada na mesa ainda. Toque nas cartas da mão para baixar Raça, Classe e Itens.':'Nada na mesa.'}</p>`}
+
+function renderGame(){const s=S,mid=me(),mp=P(s,mid),c=s.combat,turnP=cur(s);
+  let h=`<div class="hdr wood"><span class="logo">Chuta a Porta!</span><div class="row"><span class="pill">🚪 ${s.door.length}</span><span class="pill">💰 ${s.tre.length}</span>${MODE==='online'?`<span class="pill">${esc(s.code)}</span>`:''}<button id="menu" aria-label="Menu" style="padding:6px 12px">☰</button></div></div>`;
+  h+=`<div class="players">${s.players.map((p,i)=>`<button class="pchip ${i===s.turn?'turn':''} ${p.dead?'dead':''}" data-pid="${p.id}"><div class="lv">${p.level}</div><div class="nm">${esc(p.name)}${p.id===mid?' (você)':''}</div><div class="small">⚔️ ${power(p)} · 🃏 ${p.hand.length} ${[...p.races,...p.classes].map(x=>DEFS[x.d].e).join('')}${p.dead?' ☠️':''}</div></button>`).join('')}</div>`;
+  // trocas pendentes para mim
+  const myTr=(s.trades||[]).filter(t=>t.to===mid);
+  myTr.forEach(t=>{const f=P(s,t.from);if(!f)return;h+=`<div class="panel"><h3>${esc(f.name)} propõe uma troca</h3><p class="small">Você recebe: ${t.give.map(u=>nameOf(s,u)).join(', ')||'nada'}<br>Você dá: ${t.want.map(u=>nameOf(s,u)).join(', ')||'nada'}</p><div class="row"><button class="good" data-tacc="${t.id}">Aceitar</button><button data-trej="${t.id}">Recusar</button></div></div>`});
+  h+=`<div class="panel" id="center">`;
+  if(s.status==='over'){const w=P(s,s.winner);h+=`<div class="banner win" style="font-size:22px">🏆 ${esc(w?w.name:'Alguém')} venceu a aventura!</div>${(MODE==='local'||s.host===myId)?`<button class="main" id="again">Jogar de novo</button>`:''}`}
+  else if(s.loot){const L=s.loot,dp=P(s,L.dead),lp=P(s,L.order[L.i]);h+=`<h2>Saque do corpo de ${esc(dp.name)}</h2>`;
+    if(lp&&lp.id===mid)h+=`<p class="small">Sua vez de escolher uma carta.</p><div class="cards" id="lootcards">${L.pile.map(x=>cardHTML(x)).join('')}</div><button id="lootskip">Não quero nada</button>`;
+    else h+=`<p class="small muted">${esc(lp?lp.name:'')} está escolhendo uma carta.</p><div class="cards">${L.pile.map(x=>cardHTML(x)).join('')}</div>`}
+  else if(c)h+=combatHTML(s,mid,mp);
+  else{const mine=mid===turnP.id;
+    if(s.flip&&s.flip.by===turnP.id&&s.phase!=='kick')h+=`<div class="row" style="align-items:flex-start">${cardHTML(s.flip.c,'big')}<p class="small muted" style="flex:1">${esc(turnP.name)} chutou a porta e encontrou isto.</p></div>`;
+    if(mine){
+      if(s.phase==='kick')h+=`<h2>Sua vez!</h2><button class="main pulse" id="kick" style="font-size:22px;padding:16px">🚪 Chutar a porta!</button>${has(mp,'clerigo')&&s.doorDisc.length&&mp.hand.length?`<button id="resurrect">✝️ Ressurreição: pegar ${esc(DEFS[s.doorDisc[s.doorDisc.length-1].d].n)} do descarte</button>`:''}<p class="small muted">Antes, se quiser, baixe Raças, Classes e Itens tocando nas cartas.</p>`;
+      else if(s.phase==='afterKick')h+=`<h2>Nenhum monstro na sala</h2><button class="main" id="loot">🔦 Saquear a sala (pegar 1 Porta escondida)</button><p class="small muted">Ou toque num monstro da sua mão e escolha Procurar encrenca.</p>`;
+      else{const lim=handLimit(mp);h+=`<h2>Caridade e fim do turno</h2>${mp.hand.length>lim?`<p class="small">Você tem ${mp.hand.length} cartas e o limite é ${lim}. Ao encerrar, escolha ${mp.hand.length-lim} para doar ao jogador de nível mais baixo.</p>`:''}<button class="main" id="end">Encerrar turno</button><p class="small muted">Ainda dá para baixar itens, vender e trocar.</p>`}
+    }else h+=`<h2>Vez de ${esc(turnP.name)}</h2><p class="muted small">${s.phase==='kick'?'Vai chutar a porta…':s.phase==='afterKick'?'Decidindo se saqueia a sala ou procura encrenca…':'Fazendo a caridade e passando a vez…'}</p>`}
+  if(s.roll&&Date.now()-s.roll.at<15000)h+=`<p class="small">🎲 ${esc(s.roll.txt)}</p>`;
+  h+=`</div>`;
+  if(MODE==='local')h+=`<div class="viewer"><span class="small">Com o celular:</span>${s.players.map(p=>`<button class="${p.id===viewer?'on':''}" data-view="${p.id}">${esc(p.name)}</button>`).join('')}</div>`;
+  if(mp){const isT=turnP.id===mid&&!c&&!s.loot;
+    h+=`<div class="panel"><div class="hdr"><h3>${esc(mp.name)} · Nível ${mp.level}${mp.dead?' · ☠️ morto até o próximo turno':''}</h3><span class="pill">⚔️ ${power(mp)}${mp.nextMod?` · ${mp.nextMod} próx.`:''}</span></div>${tableCards(mp,true)}
+    ${isT?`<button class="gold" id="sell">🪙 Vender itens por níveis</button>`:''}</div>`;
+    h+=`<div class="panel"><h3>Sua mão (${mp.hand.length}/${handLimit(mp)})</h3><div class="cards">${mp.hand.map(x=>cardHTML(x)).join('')||'<p class="small muted">Mão vazia.</p>'}</div></div>`}
+  else h+=`<div class="panel"><p class="muted">Você está assistindo esta partida.</p></div>`;
+  h+=`<details class="panel" open><summary>Crônica da masmorra</summary><div class="log">${s.log.map(l=>`<div>${esc(l)}</div>`).join('')}</div></details>`;
+  $app.innerHTML=h;bindGame();tick()}
+function nameOf(s,u){for(const p of s.players)for(const c of inPlay(p))if(c.u===u)return esc(DEFS[c.d].n);return '(sumiu)'}
+
+function combatHTML(s,mid,mp){const c=s.combat,t=totals(s),f=P(s,c.fighter),hp=c.helper?P(s,c.helper):null,isF=mid===c.fighter,isH=mid===c.helper;let h='';
+  h+=`<h2>Combate!</h2><div class="cards">${c.monsters.map(m=>`<div class="col" style="gap:4px">${cardHTML(m.c,'big')}${m.twin?'<span class="pill">👯 com o primo gêmeo</span>':''}${m.enh.filter(e=>!DEFS[e.d].dup).map(e=>`<span class="pill">${DEFS[e.d].e} ${esc(DEFS[e.d].n)} ${DEFS[e.d].mod>0?'+':''}${DEFS[e.d].mod}</span>`).join('')}</div>`).join('')}</div>`;
+  h+=`<div class="vs"><div><div class="num hero">${t.hero}</div><div class="small">${esc(f.name)}${hp?' + '+esc(hp.name):''}</div></div><div style="font-family:var(--display);font-size:24px">×</div><div><div class="num mon">${t.mon}</div><div class="small">Monstro${c.monsters.length>1?'s':''}</div></div></div>`;
+  if(c.flee){const F=c.flee,st=F.q[F.i];if(!st)return h;const fp=P(s,st.pid),m=c.monsters[st.mi],d=DEFS[m.c.d],need=needFor(s,fp,m);
+    h+=`<div class="banner lose">🏃 ${esc(fp.name)} tenta fugir de ${esc(d.n)} — precisa de ${need}+ no dado</div>`;
+    if(st.pid===mid){if(F.roll==null)h+=`<button class="main" id="froll">🎲 Rolar o dado</button>`;
+      else{const tot=F.roll+F.bonus;h+=`<p>Você tirou <b>${F.roll}</b>${F.bonus?` +${F.bonus} = <b>${tot}</b>`:''}. Não deu.</p>`;
+        if(has(fp,'mago')&&F.bonus<3&&fp.hand.length)h+=`<button id="fwiz">🔮 Voo: descartar 1 carta (+1)</button>`;
+        if(has(fp,'halfling')&&!F.rerolled&&fp.hand.length)h+=`<button id="fhalf">🧒 Descartar 1 carta e rolar de novo</button>`;
+        if(fp.hand.some(x=>DEFS[x.d].escape))h+=`<button id="fdust">✨ Usar Pó de Sumiço e escapar</button>`;
+        if(fp.hire)h+=`<button id="fhire">🧑‍🌾 Sacrificar o Escudeiro e escapar de tudo</button>`;
+        h+=`<button class="danger" id="fbad">Aceitar a Coisa Ruim</button>`}}
+    else h+=`<p class="small muted">Aguardando ${esc(fp.name)} rolar o dado.</p>`;
+    return h}
+  h+=`<div class="banner ${t.win?'win':'lose'}">${t.win?'Os heróis estão ganhando':'O monstro está ganhando'}${combatants(s).some(p=>has(p,'guerreiro'))?' · Guerreiro vence empate':''}</div>`;
+  if(hp)h+=`<p class="small">${esc(hp.name)} ajuda em troca de ${c.ask} tesouro${c.ask===1?'':'s'}.</p>`;
+  if(c.resolveAt)h+=`<div class="banner info pulse">⏳ Últimos segundos para sacanear! <span id="cdn"></span></div>`;
+  if(isF){h+=`<div class="row">${t.win&&!c.resolveAt?`<button class="good" id="fight">⚔️ Lutar!</button>`:''}<button class="danger" id="flee">🏃 Fugir</button></div>`;
+    if(!c.helper&&c.offers.length)h+=`<p class="small">Propostas de ajuda:</p><div class="row">${c.offers.map(o=>{const op=P(s,o.id);return op?`<button data-acc="${o.id}">Aceitar ${esc(op.name)} (+${power(op)}) por ${o.ask} tesouro${o.ask===1?'':'s'}</button>`:''}).join('')}</div>`;}
+  else if(isH)h+=`<p class="small">Você está ajudando. Se vencerem, leva ${c.ask} tesouro${c.ask===1?'':'s'}.</p>`;
+  else if(mp&&!mp.dead){if(!c.helper){const my=c.offers.find(o=>o.id===mid);h+=my?`<p class="small">Você pediu ${my.ask} tesouro${my.ask===1?'':'s'} para ajudar. Aguardando ${esc(f.name)}.</p>`:`<button id="offer">🤝 Oferecer ajuda a ${esc(f.name)}</button>`}
+    h+=`<p class="small muted">Toque nas cartas da sua mão para ajudar ou atrapalhar.</p>`}
+  if(mp&&(isF||isH)){const pw=[];if(has(mp,'guerreiro'))pw.push(`<button data-pw="fury">⚔️ Fúria: descartar carta (+1) · ${(c.pw[mid+':fury']||0)}/3</button>`);
+    if(has(mp,'clerigo')&&c.monsters.some(m=>DEFS[m.c.d].undead))pw.push(`<button data-pw="turn">✝️ Expulsar morto-vivo: descartar carta (+3) · ${(c.pw[mid+':turn']||0)/3}/3</button>`);
+    if(isF&&has(mp,'mago')&&c.monsters.length===1&&!c.monsters[0].twin&&mp.hand.length>=3)pw.push(`<button data-pw="charm">🔮 Encantar: descartar a mão inteira e levar o tesouro</button>`);
+    if(pw.length)h+=`<div class="col"><span class="slotlbl">Poderes de classe</span>${pw.join('')}</div>`}
+  return h}
+
+function bindGame(){
+  $app.querySelectorAll('.card[data-u]').forEach(el=>el.onclick=()=>{if(el.closest('#lootcards'))return lootPick(el.dataset.u);openCard(el.dataset.u)});
+  $app.querySelectorAll('[data-pid]').forEach(el=>el.onclick=()=>openPlayer(el.dataset.pid));
+  $app.querySelectorAll('[data-view]').forEach(el=>el.onclick=()=>{viewer=el.dataset.view;render()});
+  $app.querySelectorAll('[data-acc]').forEach(el=>el.onclick=()=>act(s=>{const c=s.combat;if(!c||c.helper||c.fighter!==me())return false;const o=c.offers.find(o=>o.id===el.dataset.acc);if(!o)return false;c.helper=o.id;c.ask=o.ask;bump(s);log(s,`🤝 ${P(s,o.id).name} entrou no combate em troca de ${o.ask} tesouro(s).`)}));
+  $app.querySelectorAll('[data-tacc]').forEach(el=>el.onclick=()=>act(s=>acceptTrade(s,el.dataset.tacc)));
+  $app.querySelectorAll('[data-trej]').forEach(el=>el.onclick=()=>act(s=>{const t=s.trades.find(t=>t.id===el.dataset.trej);if(!t)return false;s.trades=s.trades.filter(x=>x!==t);log(s,`🙅 ${P(s,t.to).name} recusou a troca de ${P(s,t.from).name}.`)}));
+  $app.querySelectorAll('[data-pw]').forEach(el=>el.onclick=()=>classPower(el.dataset.pw));
+  on('#menu',openMenu);
+  on('#kick',()=>act(s=>{const p=cur(s);if(s.phase!=='kick'||p.id!==me()||s.loot)return false;const card=draw(s,'door');if(!card){s.phase='afterKick';return log(s,'A pilha de portas acabou.')}doorRevealed(s,p,card)}));
+  on('#resurrect',()=>pickCards({title:'Ressurreição: escolha 1 carta para descartar',cards:P(S,me()).hand,min:1,max:1,label:'Descartar e pegar do descarte'},us=>act(s=>{const p=cur(s);if(s.phase!=='kick'||p.id!==me()||!s.doorDisc.length)return false;const x=take(p.hand,us[0]);if(!x)return false;const card=s.doorDisc.pop();discard(s,x);log(s,`✝️ ${p.name} usou Ressurreição.`);doorRevealed(s,p,card)})));
+  on('#loot',()=>act(s=>{const p=cur(s);if(s.phase!=='afterKick'||p.id!==me())return false;give(s,p,draw(s,'door'));s.phase='charity';log(s,`🔦 ${p.name} saqueou a sala e pegou uma carta escondida.`)}));
+  on('#end',endTurn);
+  on('#sell',openSell);
+  on('#fight',()=>act(s=>{const c=s.combat;if(!c||c.fighter!==me()||c.flee)return false;if(!totals(s).win)return fail('Você ainda está perdendo.');c.resolveAt=Date.now()+15000;log(s,`⚔️ ${P(s,c.fighter).name} vai lutar! 15 segundos para alguém sacanear…`)}));
+  on('#flee',()=>act(s=>{const c=s.combat;if(!c||c.fighter!==me()||c.flee)return false;log(s,`🏃 ${P(s,c.fighter).name} decidiu fugir!`);startFlee(s)}));
+  on('#offer',()=>openAsk());
+  on('#again',()=>act(s=>{startGame(s)}));
+  on('#lootskip',()=>act(s=>{if(!s.loot||s.loot.order[s.loot.i]!==me())return false;lootNext(s)}));
+  on('#froll',()=>act(s=>{const F=s.combat&&s.combat.flee;if(!F||F.q[F.i].pid!==me()||F.roll!=null)return false;rollFlee(s)}));
+  on('#fbad',()=>act(s=>{const F=s.combat&&s.combat.flee;if(!F||F.q[F.i].pid!==me()||F.roll==null)return false;fleeFail(s)}));
+  on('#fdust',()=>act(s=>{const F=s.combat&&s.combat.flee;if(!F||F.q[F.i].pid!==me())return false;const p=P(s,me());const x=p.hand.find(c=>DEFS[c.d].escape);if(!x)return false;discard(s,take(p.hand,x.u));log(s,`✨ ${p.name} sumiu numa nuvem de pó!`);fleeSuccess(s)}));
+  on('#fhire',()=>act(s=>{const F=s.combat&&s.combat.flee;if(!F||F.q[F.i].pid!==me())return false;const p=P(s,me());if(!p.hire)return false;discard(s,p.hire);p.hire=null;log(s,`🧑‍🌾 O Escudeiro de ${p.name} se sacrificou heroicamente. ${p.name} escapou de tudo.`);fleeEscapeAll(s,p.id)}));
+  on('#fwiz',()=>pickCards({title:'Voo: escolha 1 carta para descartar (+1)',cards:P(S,me()).hand,min:1,max:1,label:'Descartar'},us=>act(s=>{const F=s.combat&&s.combat.flee;if(!F||F.q[F.i].pid!==me()||F.roll==null||F.bonus>=3)return false;const p=P(s,me());const x=take(p.hand,us[0]);if(!x)return false;discard(s,x);F.bonus++;checkFlee(s)})));
+  on('#fhalf',()=>pickCards({title:'Escolha 1 carta para descartar e rolar de novo',cards:P(S,me()).hand,min:1,max:1,label:'Descartar e rolar'},us=>act(s=>{const F=s.combat&&s.combat.flee;if(!F||F.q[F.i].pid!==me()||F.rerolled)return false;const p=P(s,me());const x=take(p.hand,us[0]);if(!x)return false;discard(s,x);F.rerolled=true;rollFlee(s)})))}
+function doorRevealed(s,p,card){const d=DEFS[card.d];s.flip={c:card,by:p.id};log(s,`🚪 ${p.name} chutou a porta: ${d.e} ${d.n}!`);
+  if(d.t==='monster')startCombat(s,p,card);else if(d.t==='curse'){curseHit(s,p,d);discard(s,card);s.phase='afterKick'}
+  else if(d.t==='divine'){divine(s,card);s.phase='afterKick'}else{give(s,p,card);s.phase='afterKick'}}
+function divine(s,card){s.players.filter(p=>has(p,'clerigo')).forEach(p=>{lvlUp(s,p,1,false)});discard(s,card);log(s,'🙏 Milagre! Todo Clérigo sobe 1 nível.')}
+function rollFlee(s){const F=s.combat.flee,st=F.q[F.i],p=P(s,st.pid),m=s.combat.monsters[st.mi];F.roll=d6();F.bonus=0;const need=needFor(s,p,m);
+  s.roll={txt:`${p.name} rolou ${F.roll} para fugir de ${DEFS[m.c.d].n} (precisava ${need}+)`,at:Date.now()};checkFlee(s)}
+function checkFlee(s){const F=s.combat.flee,st=F.q[F.i],p=P(s,st.pid),m=s.combat.monsters[st.mi];if(F.roll+F.bonus>=needFor(s,p,m))fleeSuccess(s)}
+function lootPick(u){act(s=>{const L=s.loot;if(!L||L.order[L.i]!==me())return false;const c=take(L.pile,u);if(!c)return false;const p=P(s,me());give(s,p,c);log(s,`🦴 ${p.name} saqueou ${DEFS[c.d].n} do corpo.`);lootNext(s)})}
+function endTurn(){const s0=S,p0=P(s0,me());if(!p0)return;const lim=handLimit(p0);
+  const doEnd=us=>act(s=>{const p=cur(s);if(s.phase!=='charity'||p.id!==me()||s.combat||s.loot)return false;const ex=(us||[]).map(u=>take(p.hand,u)).filter(Boolean);
+    if(p.hand.length>handLimit(p))return fail('Ainda sobram cartas demais.');
+    if(ex.length){const others=s.players.filter(o=>o.id!==p.id&&!o.dead);const min=Math.min(...others.map(o=>o.level));
+      if(!others.length||p.level<=min){ex.forEach(c=>discard(s,c));log(s,`🗑️ ${p.name} é o mais fraco e descartou ${ex.length} carta(s) na caridade.`)}
+      else{const low=others.filter(o=>o.level===min);ex.forEach((c,i)=>give(s,low[i%low.length],c));log(s,`🎁 Caridade: ${p.name} doou ${ex.length} carta(s) para ${low.map(o=>o.name).join(' e ')}.`)}}
+    nextTurn(s)});
+  if(p0.hand.length>lim)pickCards({title:`Caridade: escolha ${p0.hand.length-lim} carta(s) para doar`,cards:p0.hand,min:p0.hand.length-lim,max:p0.hand.length-lim,label:'Doar e encerrar o turno'},doEnd);else doEnd([])}
+function openSell(){const p=P(S,me());const items=[...p.hand,...inPlay(p)].filter(c=>DEFS[c.d].g>0);if(!items.length)return toast('Você não tem nada para vender.');
+  pickCards({title:'Vender itens: cada 1000 moedas de uma vez = 1 nível (sem troco)',cards:items,min:1,max:99,label:'Vender',sum:true},us=>act(s=>{const p=P(s,me());if(cur(s).id!==p.id||s.combat)return fail('Só no seu turno, fora de combate.');
+    const cs=us.map(u=>p.hand.find(c=>c.u===u)||inPlay(p).find(c=>c.u===u)).filter(Boolean);let tot=cs.reduce((a,c)=>a+DEFS[c.d].g,0),dbl=false;
+    if(has(p,'halfling')&&!p.soldDouble){const top=Math.max(...cs.map(c=>DEFS[c.d].g));tot+=top;dbl=true}
+    if(tot<1000)return fail(`Isso vale ${tot} moedas. Precisa somar pelo menos 1000.`);if(p.level>=9)return fail('Do 9 para o 10 só matando monstro.');
+    cs.forEach(c=>{take(p.hand,c.u)||take(p.eq,c.u)||take(p.carried,c.u);discard(s,c)});if(dbl)p.soldDouble=true;const n=lvlUp(s,p,Math.floor(tot/1000),false);
+    log(s,`🪙 ${p.name} vendeu ${cs.length} item(ns) por ${tot} moedas${dbl?' (Halfling: um pelo dobro)':''} e subiu ${n} nível${n===1?'':'is'}.`)}))}
+function classPower(k){const p=P(S,me());if(!p)return;
+  if(k==='charm')return act(s=>{const c=s.combat,p=P(s,me());if(!c||c.fighter!==p.id||c.flee||!has(p,'mago')||p.hand.length<3||c.monsters.length!==1)return false;p.hand.splice(0).forEach(x=>discard(s,x));const r=reward(s,false);log(s,`🔮 ${p.name} encantou o monstro, descartou a mão e levou ${r.tr-r.ask} tesouro(s), sem subir de nível.`)});
+  pickCards({title:k==='fury'?'Fúria: escolha cartas para descartar (+1 cada)':'Expulsar: escolha cartas para descartar (+3 cada)',cards:p.hand,min:1,max:3,label:'Descartar'},us=>act(s=>{const c=s.combat,p=P(s,me());if(!c||c.flee)return false;
+    const key=me()+':'+k,per=k==='fury'?1:3,used=(c.pw[key]||0)/per,n=Math.min(us.length,3-used);if(n<=0)return fail('Você já usou o máximo de 3 cartas.');
+    us.slice(0,n).forEach(u=>discard(s,take(p.hand,u)));c.pw[key]=(c.pw[key]||0)+n*per;bump(s);log(s,`${k==='fury'?'⚔️':'✝️'} ${p.name} descartou ${n} carta(s): +${n*per}.`)}))}
+function openAsk(){const c=S.combat;const max=c.monsters.reduce((a,m)=>a+Math.max(0,DEFS[m.c.d].tr+m.tr)*(m.twin?2:1),0);
+  openModal(()=>{const acts=[];let b='';for(let i=0;i<=max;i++){acts.push(()=>act(s=>{const c=s.combat;if(!c||c.helper||c.offers.some(o=>o.id===me())||c.fighter===me())return false;c.offers.push({id:me(),ask:i});log(s,`🙋 ${P(s,me()).name} oferece ajuda em troca de ${i} tesouro(s).`)}));b+=`<button data-a="${i}">${i===0?'Ajudo de graça':`Quero ${i} tesouro${i>1?'s':''}`}</button>`}
+    document.getElementById('sheet')._acts=acts;return `<h2>Quanto você cobra para ajudar?</h2><p class="small muted">O combate vale ${max} tesouro(s). Quem luta decide se aceita.</p>${b}<button id="mclose">Fechar</button>`})}
+
+let finalizing=false;
+function tick(){const c=S&&S.combat;const el=document.getElementById('cdn');if(!c||!c.resolveAt)return;const left=Math.max(0,Math.ceil((c.resolveAt-Date.now())/1000));if(el)el.textContent=left+'s';
+  const mine=MODE==='local'||c.fighter===myId||Date.now()>c.resolveAt+6000;
+  if(Date.now()>=c.resolveAt&&mine&&!finalizing){finalizing=true;act(s=>finalize(s)).finally(()=>finalizing=false)}}
+setInterval(()=>{if(screen==='game')tick()},400);
+
+/* ---------- modais ---------- */
+function openModal(fn){modalFn=fn;refreshModal()}
+function closeModal(){modalFn=null;document.getElementById('modal').classList.remove('on')}
+function refreshModal(){const sh=document.getElementById('sheet');const html=modalFn&&modalFn();if(!html)return closeModal();if(html===true)return;sh.innerHTML=html;document.getElementById('modal').classList.add('on');
+  sh.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{const a=sh._acts[+b.dataset.a];closeModal();a()});const x=sh.querySelector('#mclose');if(x)x.onclick=closeModal;
+  sh.querySelectorAll('.card[data-u]').forEach(el=>{if(!el.dataset.pick)el.onclick=()=>openCard(el.dataset.u)});if(sh._after)sh._after()}
+document.getElementById('modal').onclick=e=>{if(e.target.id==='modal')closeModal()};
+function pickCards(o,cb){const sel=new Set();modalFn=null;const sh=document.getElementById('sheet');
+  const draw_=()=>{const tot=[...sel].reduce((a,u)=>{const c=o.cards.find(x=>x.u===u);return a+(c?DEFS[c.d].g||0:0)},0);
+    sh.innerHTML=`<h2>${esc(o.title)}</h2><div class="cards">${o.cards.map(c=>cardHTML(c,sel.has(c.u)?'sel':'').replace('<button','<button data-pick="1"')).join('')}</div>${o.sum?`<p><b>Total: ${tot} moedas</b> → ${Math.floor(tot/1000)} nível(is)</p>`:''}<p class="small muted">Selecionadas: ${sel.size}${o.min===o.max?' de '+o.min:''}</p><button class="main" id="pok" ${sel.size<o.min||sel.size>o.max?'disabled':''}>${esc(o.label)}</button><button id="pcancel">Cancelar</button>`;
+    sh.querySelectorAll('[data-pick]').forEach(el=>el.onclick=()=>{const u=el.dataset.u;if(sel.has(u))sel.delete(u);else{if(o.max===1)sel.clear();sel.add(u)}draw_()});
+    sh.querySelector('#pok').onclick=()=>{closeModal();cb([...sel])};sh.querySelector('#pcancel').onclick=closeModal};
+  modalFn=()=>true;draw_();document.getElementById('modal').classList.add('on')}
+
+function where(p,u){if(p.hand.some(c=>c.u===u))return 'hand';if(p.eq.some(c=>c.u===u))return 'eq';if(p.carried.some(c=>c.u===u))return 'carried';if(p.races.some(c=>c.u===u))return 'race';if(p.classes.some(c=>c.u===u))return 'class';if(p.hb&&p.hb.u===u)return 'hb';if(p.sm&&p.sm.u===u)return 'sm';if(p.hire&&p.hire.u===u)return 'hire';return null}
+function allOf(p){return[...p.hand,...p.eq,...p.carried,...p.races,...p.classes,...(p.hb?[p.hb]:[]),...(p.sm?[p.sm]:[]),...(p.hire?[p.hire]:[])]}
+function openCard(u){openModal(()=>{const s=S;let owner=null,w=null,card=null;
+  for(const p of s.players){const x=where(p,u);if(x){owner=p;w=x;card=allOf(p).find(c=>c.u===u);break}}
+  if(!card&&s.combat)for(const m of s.combat.monsters)if(m.c.u===u)card=m.c;
+  if(!card&&s.flip&&s.flip.c.u===u)card=s.flip.c;if(!card&&s.loot)card=s.loot.pile.find(c=>c.u===u);
+  if(!card)return null;const d=DEFS[card.d];const visible=!owner||owner.id===me()||w!=='hand';if(!visible)return null;
+  const acts=cardActions(card,owner,w);document.getElementById('sheet')._acts=acts.map(a=>a.fn);
+  return `<div class="row" style="align-items:flex-start">${cardHTML(card,'big')}<div class="col" style="flex:1"><h3>${esc(d.n)}</h3><p class="small">${describe(d)}</p>${card.ch?'<p class="small"><i>Preso com Jeitinho Real.</i></p>':''}${owner&&w==='eq'&&!usable(owner,card)?'<p class="small" style="color:var(--wax)">Sem bônus: você não pode usar este item.</p>':''}</div></div>
+    ${acts.map((a,i)=>`<button data-a="${i}" class="${a.cls||''}">${esc(a.label)}</button>`).join('')}<button id="mclose">Fechar</button>`})}
+
+function cardActions(card,owner,w){const s=S,mid=me();if(!owner||owner.id!==mid||s.status!=='play')return[];
+  const d=DEFS[card.d],u=card.u,c=s.combat,isTurn=cur(s).id===mid,fighting=!!c&&(c.fighter===mid||c.helper===mid),A=[];
+  const add=(label,fn,cls)=>A.push({label,cls,fn:()=>act(s=>{const p=P(s,me());if(!p||!where(p,u))return fail('Essa carta não está mais com você.');return fn(s,p)})});
+  if(w==='eq'){if(!fighting)add('Carregar sem usar (tira o bônus)',(s,p)=>{p.carried.push(take(p.eq,u))});return A}
+  if(w==='carried'){if(!fighting&&(d.t==='item'))add('Equipar',(s,p)=>{if(s.combat&&combatants(s).some(x=>x.id===p.id))return fail('Não dá para trocar no meio da luta.');const x=take(p.carried,u);if(placeItem(s,p,x,true,x.ch)===false){p.carried.push(x);return false}},'main');return A}
+  if(w==='race'||w==='class'||w==='hb'||w==='sm'){add('Abandonar esta carta',(s,p)=>{const x=take(p.races,u)||take(p.classes,u);if(x)discard(s,x);if(p.hb&&p.hb.u===u){discard(s,p.hb);p.hb=null}if(p.sm&&p.sm.u===u){discard(s,p.sm);p.sm=null}
+      if(p.races.length>1&&!p.hb)discard(s,p.races.pop());if(p.classes.length>1&&!p.sm)discard(s,p.classes.pop());fixRestrictions(s,p);log(s,`${p.name} abandonou ${d.n}.`)});return A}
+  if(w==='hire'){add('Dispensar o Escudeiro',(s,p)=>{discard(s,p.hire);p.hire=null});return A}
+  // na mão
+  const cantPlay=fighting?'Não durante a sua luta.':!(isTurn&&!c)&&!owner.fresh.includes(u)?'Só no seu turno fora de combate, ou logo que você ganhar a carta.':'';
+  switch(d.t){
+    case 'item':if(!cantPlay){add('Baixar e equipar',(s,p)=>{const x=take(p.hand,u);if(placeItem(s,p,x,true)===false){p.hand.push(x);return false}log(s,`🧰 ${p.name} equipou ${d.n}.`)},'main');
+        add('Baixar só carregando',(s,p)=>{const x=take(p.hand,u);if(placeItem(s,p,x,false)===false){p.hand.push(x);return false}log(s,`🎒 ${p.name} baixou ${d.n} na mesa.`)})}break;
+    case 'one':if(c&&!d.escape){add(`Usar a favor dos heróis (+${d.b})`,(s,p)=>{const c=s.combat;if(!c||c.flee)return false;c.heroMod+=d.b;c.used.push(take(p.hand,u));bump(s);log(s,`${d.e} ${p.name} usou ${d.n}: +${d.b} para os heróis.`)},'good');
+        add(`Usar a favor do monstro (+${d.b})`,(s,p)=>{const c=s.combat;if(!c||c.flee)return false;c.monMod+=d.b;c.used.push(take(p.hand,u));bump(s);log(s,`${d.e} ${p.name} usou ${d.n}: +${d.b} para o monstro! 😈`)},'danger')}break;
+    case 'lvl':if(owner.level<9&&!owner.dead)add('Usar: subir 1 nível',(s,p)=>{if(p.level>=9)return fail('Do 9 para o 10 só matando monstro.');discard(s,take(p.hand,u));p.level++;log(s,`${d.e} ${p.name}: ${d.n}! Sobe para o nível ${p.level}.`)},'main');break;
+    case 'curse':s.players.filter(t=>!t.dead).forEach(t=>add(`Amaldiçoar ${t.name}${t.id===mid?' (você mesmo?!)':''}`,(s,p)=>{const tp=P(s,t.id);discard(s,take(p.hand,u));curseHit(s,tp,d,p.name);bump(s)},t.id===mid?'':'danger'));break;
+    case 'enh':if(c&&!c.flee)c.monsters.forEach((m,i)=>add(`Usar em ${DEFS[m.c.d].n}`,(s,p)=>{const c=s.combat;if(!c||!c.monsters[i]||c.flee)return false;const e=take(p.hand,u),M=c.monsters[i];if(d.dup){if(M.twin)return fail('Esse já tem um gêmeo.');M.twin=true}else{M.mod+=d.mod;M.tr+=d.tr}M.enh.push(e);bump(s);log(s,`${d.e} ${p.name} jogou ${d.n} em ${DEFS[M.c.d].n}.`)},'danger'));break;
+    case 'wand':if(c&&!c.flee)owner.hand.filter(x=>DEFS[x.d].t==='monster').forEach(x=>add(`Trazer ${DEFS[x.d].n} (Nv ${DEFS[x.d].lv}) para a briga`,(s,p)=>{const c=s.combat;if(!c||c.flee)return false;const mc=take(p.hand,x.u);if(!mc)return false;discard(s,take(p.hand,u));c.monsters.push({c:mc,mod:0,tr:0,enh:[]});bump(s);log(s,`🚪 ${p.name}: Chegou Mais Um! ${DEFS[mc.d].n} entrou no combate!`)},'danger'));break;
+    case 'monster':if(isTurn&&s.phase==='afterKick'&&!c)add('Procurar encrenca: lutar com ele',(s,p)=>{if(s.phase!=='afterKick'||cur(s).id!==p.id||s.combat)return false;const mc=take(p.hand,u);startCombat(s,p,mc);s.flip=null;log(s,`😤 ${p.name} foi procurar encrenca com ${d.n}!`)},'main');break;
+    case 'race':case 'class':{const isR=d.t==='race',list=isR?owner.races:owner.classes,extra=isR?owner.hb:owner.sm;
+      if(isTurn||owner.fresh.includes(u)){if(!list.length||(extra&&list.length<2))add(`Tornar-se ${d.n}`,(s,p)=>{const L=isR?p.races:p.classes;if(L.some(x=>DEFS[x.d][isR?'race':'cls']===DEFS[card.d][isR?'race':'cls']))return fail('Você já é isso.');L.push(take(p.hand,u));log(s,`${d.e} ${p.name} agora é ${d.n}.`)},'main');
+        if(list.length)add(`Trocar ${DEFS[list[list.length-1].d].n} por ${d.n}`,(s,p)=>{const L=isR?p.races:p.classes;discard(s,L.pop());L.push(take(p.hand,u));fixRestrictions(s,p);log(s,`${d.e} ${p.name} agora é ${d.n}.`)})}break}
+    case 'hb':case 'sm':if((isTurn||owner.fresh.includes(u))&&!(d.t==='hb'?owner.hb:owner.sm)){const need=d.t==='hb'?owner.races.length:owner.classes.length;if(need)add('Baixar na mesa',(s,p)=>{if(d.t==='hb')p.hb=take(p.hand,u);else p.sm=take(p.hand,u);log(s,`${d.e} ${p.name} baixou ${d.n}.`)},'main')}break;
+    case 'cheat':if(!cantPlay)[...owner.hand,...owner.carried].filter(x=>DEFS[x.d].t==='item').forEach(x=>add(`Equipar ${DEFS[x.d].n} com jeitinho`,(s,p)=>{const it=take(p.hand,x.u)||take(p.carried,x.u);if(!it)return false;if(placeItem(s,p,it,true,true)===false){p.hand.push(it);return false}discard(s,take(p.hand,u));log(s,`🤞 ${p.name} deu um jeitinho e equipou ${DEFS[x.d].n}.`)}));break;
+    case 'divine':add('Jogar agora',(s,p)=>{divine(s,take(p.hand,u))},'main');break;
+    case 'hire':if(!cantPlay&&!owner.hire)add('Contratar (baixar na mesa)',(s,p)=>{p.hire=take(p.hand,u);log(s,`🧑‍🌾 ${p.name} contratou um Escudeiro.`)},'main');break;
+  }
+  if(c&&!c.flee&&has(owner,'ladrao'))combatants(s).forEach(t=>{if(!c.stab.includes(mid+':'+t.id))add(`Apunhalar ${t.name} (−2), descartando esta carta`,(s,p)=>{const c=s.combat;if(!c||c.flee||c.stab.includes(p.id+':'+t.id))return false;discard(s,take(p.hand,u));c.stab.push(p.id+':'+t.id);c.heroMod-=2;bump(s);log(s,`🗡️ ${p.name} apunhalou ${t.name} pelas costas: −2!`)},'danger')});
+  if(cantPlay&&['item','race','class','hire','cheat'].includes(d.t))A.push({label:cantPlay,fn:()=>{}});
+  return A}
+
+function openPlayer(pid){openModal(()=>{const s=S,p=P(s,pid);if(!p)return null;const mp=P(s,me());const acts=[];let btn='';
+  const noCombat=!s.combat||!combatants(s).some(x=>x.id===pid||x.id===me());
+  if(mp&&p.id!==mp.id&&noCombat&&s.status==='play'){acts.push(()=>proposeTrade(pid));btn+=`<button data-a="${acts.length-1}">🤝 Propor troca de itens</button>`;
+    if(has(mp,'ladrao')&&mp.hand.length&&inPlay(p).some(c=>!DEFS[c.d].big)){acts.push(()=>steal(pid));btn+=`<button data-a="${acts.length-1}" class="danger">🗡️ Tentar furtar um item pequeno</button>`}}
+  document.getElementById('sheet')._acts=acts;
+  return `<h2>${esc(p.name)}${p.dead?' ☠️':''}</h2><div class="row"><span class="pill">Nível ${p.level}</span><span class="pill">⚔️ ${power(p)}</span><span class="pill">🃏 ${p.hand.length} na mão</span><span class="pill">🏃 +${fleeBonus(p)} na fuga</span></div>${tableCards(p,false)}${btn}<button id="mclose">Fechar</button>`})}
+function proposeTrade(pid){const mp=P(S,me()),tp=P(S,pid);
+  pickCards({title:'O que você dá? (itens na sua mesa)',cards:inPlay(mp),min:0,max:99,label:'Próximo'},give_=>pickCards({title:`O que você quer de ${tp.name}?`,cards:inPlay(tp),min:0,max:99,label:'Enviar proposta'},want=>{if(!give_.length&&!want.length)return toast('Escolha pelo menos um item.');
+    act(s=>{s.trades=s.trades||[];s.trades.push({id:'t'+Date.now(),from:me(),to:pid,give:give_,want});log(s,`📜 ${P(s,me()).name} propôs uma troca a ${P(s,pid).name}.`)})}))}
+function acceptTrade(s,id){const t=(s.trades||[]).find(x=>x.id===id);if(!t||t.to!==me())return false;const a=P(s,t.from),b=P(s,t.to);s.trades=s.trades.filter(x=>x!==t);
+  if(s.combat&&combatants(s).some(x=>x.id===a.id||x.id===b.id))return fail('Não dá para trocar durante o combate.');
+  const g=t.give.map(u=>inPlay(a).find(c=>c.u===u)),w=t.want.map(u=>inPlay(b).find(c=>c.u===u));if(g.includes(undefined)||w.includes(undefined)){log(s,'A troca falhou: algum item já não estava lá.');return}
+  g.forEach(c=>{take(a.eq,c.u)||take(a.carried,c.u);b.carried.push(c)});w.forEach(c=>{take(b.eq,c.u)||take(b.carried,c.u);a.carried.push(c)});[a,b].forEach(p=>fixRestrictions(s,p));
+  log(s,`🤝 ${a.name} e ${b.name} trocaram itens. Os itens recebidos ficam carregados; equipe-os quando quiser.`)}
+function steal(pid){const mp=P(S,me()),tp=P(S,pid);
+  pickCards({title:`Qual item de ${tp.name} você quer furtar?`,cards:inPlay(tp).filter(c=>!DEFS[c.d].big),min:1,max:1,label:'Próximo'},it=>pickCards({title:'Descarte 1 carta para tentar',cards:mp.hand,min:1,max:1,label:'Tentar o furto'},dc=>act(s=>{const p=P(s,me()),t=P(s,pid);if(!has(p,'ladrao'))return false;
+    if(s.combat&&combatants(s).some(x=>x.id===p.id||x.id===t.id))return fail('Não durante o combate.');const x=take(p.hand,dc[0]);if(!x)return false;discard(s,x);const r=d6();s.roll={txt:`${p.name} rolou ${r} para furtar (precisava 4+)`,at:Date.now()};
+    if(r>=4){const c=take(t.eq,it[0])||take(t.carried,it[0]);if(!c)return log(s,'O item já tinha sumido.');p.carried.push(c);log(s,`🗡️ ${p.name} furtou ${DEFS[c.d].n} de ${t.name}!`)}else{p.level=Math.max(1,p.level-1);log(s,`👊 ${p.name} foi pego furtando ${t.name}, levou uma surra e perdeu 1 nível.`)}})))}
+function openMenu(){openModal(()=>{const acts=[()=>openModal(()=>{document.getElementById('sheet')._acts=[];return `<h2>Regras</h2>${RULES}<button id="mclose">Fechar</button>`}),()=>{if(MODE==='local'){S=null;MODE=null;screen='home';render()}else leave()}];
+  document.getElementById('sheet')._acts=acts;return `<h2>Menu</h2><button data-a="0">Regras</button><button data-a="1" class="danger">${MODE==='local'?'Sair (a partida fica salva)':'Sair da sala'}</button><button id="mclose">Fechar</button>`})}
+
+render();initOnline().catch(()=>{});
+</script>
+</body>
+</html>
