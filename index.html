@@ -88,6 +88,10 @@ input{font-family:var(--body);font-size:18px;padding:11px;border-radius:6px;bord
 .viewer button.on{background:var(--gold)}
 details>summary{font-family:var(--display);cursor:pointer;color:var(--wax);font-size:18px}
 .rules p{margin-bottom:6px}
+.dedic{margin:6px auto 0;display:flex;align-items:center;justify-content:center;gap:12px;padding:12px 18px;max-width:100%;text-align:center;border-top:1px solid #b8862b88;border-bottom:1px solid #b8862b88;background:linear-gradient(90deg,transparent,#3a241699 20%,#3a241699 80%,transparent)}
+.dedic .dtx{font-family:var(--num);font-weight:700;font-size:15px;letter-spacing:3px;line-height:1.5;color:#f3d48a;text-shadow:0 0 12px #ffb04a66,0 2px 0 #000;text-wrap:balance}
+.dedic .orn{font-size:24px;color:#d9a441;text-shadow:0 0 10px #ffb04a88}.dedic .orn.flip{transform:scaleX(-1)}
+@media (prefers-reduced-motion:no-preference){.dedic{animation:dedin 1.6s ease-out both}.dedic .dtx{animation:glow 3s ease-in-out 1.6s infinite alternate}@keyframes dedin{from{opacity:.15;letter-spacing:8px}to{opacity:1}}@keyframes glow{to{text-shadow:0 0 22px #ffc76acc,0 2px 0 #000}}}
 @media (prefers-reduced-motion:no-preference){.pulse{animation:pulse 1s ease-in-out infinite alternate}@keyframes pulse{to{transform:scale(1.03)}}}
 </style>
 </head>
@@ -338,7 +342,7 @@ const RULES=`<div class="rules small">
 <p><b>Raças e Classes:</b> uma de cada. Sangue Misturado permite 2 Raças; Duas Vocações, 2 Classes. Toque numa carta para ler seu poder.</p></div>`;
 
 function renderHome(){
-  $app.innerHTML=`<div class="hero-title"><h1>Chuta a Porta!</h1><p>Um jogo de cartas de masmorra para 2 a 6 aventureiros. Chute portas, mate monstros, roube tesouros e apunhale seus amigos pelas costas. Quem chegar primeiro ao <b>nível 10</b> vence.</p></div>
+  $app.innerHTML=`<div class="dedic" role="note"><span class="orn">❦</span><span class="dtx">DE BENJA PRA SUA QUERIDA CANAAN</span><span class="orn flip">❦</span></div><div class="hero-title"><h1>Chuta a Porta!</h1><p>Um jogo de cartas de masmorra para 2 a 6 aventureiros. Chute portas, mate monstros, roube tesouros e apunhale seus amigos pelas costas. Quem chegar primeiro ao <b>nível 10</b> vence.</p></div>
   <div class="panel"><h2>Cada um no seu celular</h2><p class="muted small">Um cria a sala e manda o convite no grupo. Cada um entra do próprio celular.</p>
     ${fdb?`<button class="main" id="goOnline">Jogar online</button>`:`<p class="small" style="color:var(--wax)">Sem conexão com o servidor das salas. Verifique a internet e recarregue.</p>`}</div>
   <div class="panel"><h2>Um celular só</h2><p class="muted small">Passa e joga: o celular vai de mão em mão.</p><button id="goLocal">Jogar no mesmo celular</button>${ls('chuta_local2')?`<button id="resumeLocal">Continuar partida salva</button>`:''}</div>
